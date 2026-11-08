@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>國語一上 第一冊 | 國字大冒險目錄</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 自訂字體與兒童友善樣式 */
+        :root {
+            --kaiti-font: "BiauKai", "DFKai-SB", "標楷體", "Kaiti TC", "STKaiti", "Noto Serif TC", serif;
+            --ui-font: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            --en-font: "Fredoka", "Noto Sans TC", sans-serif;
+        }
+
+        body {
+            font-family: var(--ui-font);
+            background-color: #FFFBEB;
+            background-image: 
+                radial-gradient(#FDE68A 2.5px, transparent 2.5px), 
+                radial-gradient(#FDE68A 2.5px, #FFFBEB 2.5px);
+            background-size: 44px 44px;
+            background-position: 0 0, 22px 22px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 國字標準楷體顯示 */
+        .kaiti-char {
+            font-family: var(--kaiti-font);
+            line-height: 1;
+        }
+
+        .en-badge {
+            font-family: var(--en-font);
+        }
+
+        /* 課本田字格背景設計 */
+        .tian-zi-ge {
+            position: relative;
+            background-color: #FFFFFF;
+            border: 3px solid #F87171;
+            box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.15);
+        }
+        .tian-zi-ge::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 1.5px dashed #FCA5A5;
+            pointer-events: none;
+        }
+        .tian-zi-ge::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            border-left: 1.5px dashed #FCA5A5;
+            pointer-events: none;
+        }
+
+        /* 直式注音符號排版區 (模擬課本生字格右側黃色底注音欄) */
+        .zhuyin-box {
+            background-color: #FEF08A;
+            border-left: 2px solid #F87171;
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            letter-spacing: -1px;
+            font-weight: 800;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 立體遊戲按鈕效果 */
+        .btn-3d {
+            transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+        }
+
+        /* 浮動動畫 */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(3deg); }
+        }
+        .animate-float {
+            animation: floatSlow 3.5s ease-in-out infinite;
+        }
+
+        /* 星星彈出動畫 */
+        @keyframes popStar {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.25); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .star-pop {
+            animation: popStar 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* 隱藏捲軸但保留滑動功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800 pb-12">
+
+    <!-- 慶祝彩帶畫布 -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+    <!-- 頂部導航與學習狀態列 -->
+    <header class="sticky top-0 z-30 bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 shadow-lg border-b-4 border-orange-500 px-4 py-3 sm:px-6 sm:py-4">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- 標題與魔法貓頭鷹吉祥物 (呼應課本目次頁的魔法師貓頭鷹) -->
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-2xl shadow-md border-4 border-orange-200 flex items-center justify-center text-3xl sm:text-4xl animate-float">
+                    🦉
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-orange-800 text-amber-100 text-xs sm:text-sm font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                            國語一上 第一冊
+                        </span>
+                        <span class="text-orange-950 text-xs sm:text-sm font-bold hidden sm:inline">
+                            奇幻魔法目次
+                        </span>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-white drop-shadow-[0_3px_2px_rgba(154,52,18,0.6)] tracking-wide mt-0.5">
+                        你的國字大冒險
+                    </h1>
+                </div>
+            </div>
+
+            <!-- 星星收集進度與控制面板 -->
+            <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full md:w-auto">
+                <!-- 星星統計 -->
+                <div class="bg-white/95 backdrop-blur px-4 py-2 rounded-2xl border-2 border-amber-300 shadow-md flex items-center gap-2">
+                    <span class="text-2xl sm:text-3xl">⭐</span>
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-400 leading-none">你的星星</div>
+                        <div class="text-lg sm:text-xl font-black text-amber-600 leading-tight">
+                            <span id="stars-count">0</span> <span class="text-sm text-slate-400">/ <span id="max-stars-count">0</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 通關課程統計 -->
+                <div class="bg-white/95 backdrop-blur px-4 py-2 rounded-2xl border-2 border-emerald-300 shadow-md flex items-center gap-2">
+                    <span class="text-2xl sm:text-3xl">🏆</span>
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-400 leading-none">完成關卡</div>
+                        <div class="text-lg sm:text-xl font-black text-emerald-600 leading-tight">
+                            <span id="completed-count">0</span> <span class="text-sm text-slate-400">/ <span id="total-lessons-count">0</span> 關</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 語音鼓勵與重置按鈕 -->
+                <button onclick="speakWelcome()" class="btn-3d bg-sky-500 hover:bg-sky-400 text-white font-bold px-3.5 py-2.5 rounded-2xl border-b-4 border-sky-700 shadow-md flex items-center gap-1.5 text-sm sm:text-base">
+                    <span>🔊</span>
+                    <span>聽魔法師說</span>
+                </button>
+
+                <button onclick="openResetModal()" class="btn-3d bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-3 py-2.5 rounded-2xl border-b-4 border-rose-300 text-xs sm:text-sm" title="重置進度">
+                    🔄 重置
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要內容區 -->
+    <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 pt-6 flex-grow">
+
+        <!-- 總進度條與今日任務橫幅 -->
+        <section class="bg-white rounded-3xl p-4 sm:p-6 shadow-md border-4 border-amber-200 mb-6">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✨</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-800">小朋友，看一看今天要挑戰哪一課呢？</h2>
+                    </div>
+                    <p class="text-sm sm:text-base text-slate-600 font-medium">
+                        我們先從 <span class="text-orange-600 font-black">「前導課程：數字遊戲（1~10 與加減等於）」</span> 和 <span class="text-emerald-600 font-black">「魔法文字」</span> 開始出發吧！點國字格就會發音喔！
+                    </p>
+                </div>
+
+                <!-- 進度條 -->
+                <div class="w-full lg:w-72 bg-amber-50 p-3 rounded-2xl border-2 border-amber-200 shrink-0">
+                    <div class="flex justify-between text-xs sm:text-sm font-bold text-amber-900 mb-1.5">
+                        <span>你的冒險進度</span>
+                        <span id="progress-percentage">0%</span>
+                    </div>
+                    <div class="w-full h-4 bg-amber-200/70 rounded-full overflow-hidden p-0.5">
+                        <div id="progress-bar" class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 單元篩選標籤列 (完全對應課本目次結構) -->
+        <nav class="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-3 mb-5 no-scrollbar" id="unit-tabs">
+            <!-- 由 JavaScript 自動渲染 -->
+        </nav>
+
+        <!-- 課程卡片網格 -->
+        <section id="lessons-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 由 JavaScript 動態渲染課程卡片 -->
+        </section>
+
+    </main>
+
+    <!-- 底部提示區 -->
+    <footer class="max-w-6xl w-full mx-auto px-4 sm:px-6 mt-12">
+        <div class="bg-amber-100/90 border-2 border-dashed border-amber-300 rounded-2xl p-4 text-center sm:flex sm:items-center sm:justify-between text-xs sm:text-sm text-amber-900">
+            <div class="flex items-center justify-center gap-2 font-bold mb-2 sm:mb-0">
+                <span>📚</span>
+                <span>課本版本：國民小學語文學習領域《國語一上 第一冊》目次完整對應</span>
+            </div>
+            <div class="text-amber-800 font-bold">
+                進度自動儲存於你的平板/電腦中
+            </div>
+        </div>
+    </footer>
+
+    <!-- =========================================================================
+         互動視窗 1：生字大卡練習室 ＆ 隨堂小遊戲 (支援雙語發音、加減法與象形圖解)
+         ========================================================================= -->
+    <div id="preview-modal" class="fixed inset-0 z-40 hidden bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-5">
+        <div class="bg-amber-50 border-4 border-amber-400 rounded-3xl max-w-5xl w-full max-h-[94vh] flex flex-col shadow-2xl overflow-hidden animate-[popStar_0.25s_ease-out]">
+            
+            <!-- Modal 標題列 -->
+            <div id="modal-header" class="bg-gradient-to-r from-amber-400 to-orange-400 px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b-4 border-amber-500">
+                <div class="flex items-center gap-3">
+                    <span id="modal-icon" class="text-3xl sm:text-4xl bg-white w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shadow">📖</span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="modal-lesson-num" class="text-xs font-black uppercase bg-white/90 text-orange-800 px-2.5 py-0.5 rounded-full">前導課程</span>
+                            <span id="modal-page-badge" class="text-xs font-bold bg-black/20 text-white px-2.5 py-0.5 rounded-full">課本 P.6</span>
+                        </div>
+                        <h3 id="modal-lesson-title" class="text-xl sm:text-2xl font-black text-white drop-shadow mt-0.5">課文名稱</h3>
+                    </div>
+                </div>
+                <button onclick="closePreviewModal()" class="btn-3d bg-white hover:bg-rose-50 text-slate-700 font-black w-11 h-11 rounded-2xl border-b-4 border-slate-300 flex items-center justify-center text-xl shadow">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Modal 內容滾動區 -->
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-6">
+                
+                <!-- 頂部引導與整課朗讀按鈕 -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm">
+                    <div>
+                        <div class="font-black text-slate-800 text-base sm:text-lg">👆 點擊下面的國字大卡，聽聽看國語和英文怎麼唸！</div>
+                        <p id="modal-lesson-desc" class="text-xs sm:text-sm text-slate-500 mt-0.5">你可以先跟著唸一次，再玩下面的隨堂小挑戰喔！</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 shrink-0">
+                        <button id="modal-read-all-btn" class="btn-3d bg-sky-500 hover:bg-sky-400 text-white font-bold px-4 py-2.5 rounded-xl border-b-4 border-sky-700 flex items-center gap-1.5 shadow text-sm sm:text-base">
+                            <span>🔊</span> 全部唸一次
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 隨堂小挑戰：聽音找字 ＆ 數學加減/象形挑戰 -->
+                <div class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-4 border-emerald-300 rounded-3xl p-4 sm:p-5 shadow-inner">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div class="flex items-start sm:items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shrink-0 shadow">
+                                🎯
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-black text-emerald-950 text-base sm:text-lg">隨堂小遊戲：考考你的眼力與耳力！</h4>
+                                    <span id="quiz-streak-badge" class="bg-amber-300 text-amber-950 text-xs font-black px-2.5 py-0.5 rounded-full">連對 0 題 🔥</span>
+                                </div>
+                                <div id="quiz-status-text" class="text-sm sm:text-base text-emerald-800 font-bold mt-1">
+                                    點選右邊的按鈕出題，再從下方字卡點選正確答案！
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2 shrink-0">
+                            <button onclick="startMiniQuiz('listen')" class="btn-3d bg-emerald-500 hover:bg-emerald-400 text-white font-black px-4 py-2.5 rounded-xl border-b-4 border-emerald-700 shadow text-sm sm:text-base flex items-center gap-1.5">
+                                <span>👂</span> 聽音找字
+                            </button>
+                            <button id="special-quiz-btn" onclick="startMiniQuiz('special')" class="btn-3d bg-orange-500 hover:bg-orange-400 text-white font-black px-4 py-2.5 rounded-xl border-b-4 border-orange-700 shadow text-sm sm:text-base flex items-center gap-1.5">
+                                <span>🧮</span> 數學/圖案挑戰
+                            </button>
+                            <button id="repeat-quiz-btn" onclick="repeatCurrentQuizAudio()" class="hidden btn-3d bg-sky-100 hover:bg-sky-200 text-sky-800 font-black px-3 py-2.5 rounded-xl border-b-4 border-sky-300 text-sm">
+                                🔄 再聽一次
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 數學算式或象形圖案大題目展示框 (出題時顯示) -->
+                    <div id="quiz-visual-board" class="hidden mt-4 bg-white border-2 border-emerald-200 rounded-2xl p-4 text-center shadow-sm">
+                        <div id="quiz-visual-content" class="text-2xl sm:text-4xl font-black text-slate-800 tracking-wider"></div>
+                        <div id="quiz-visual-sub" class="text-xs sm:text-sm font-bold text-slate-500 mt-1">請點選下方正確的國字卡！</div>
+                    </div>
+                </div>
+
+                <!-- 田字格生字大卡片區 -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-black text-slate-700 flex items-center gap-1.5 text-base sm:text-lg">
+                            <span>✍️</span> 本課國字魔法卡（點擊字卡回答或發音）
+                        </h4>
+                        <span class="text-xs font-bold text-slate-500 bg-amber-100 px-3 py-1 rounded-full">標準楷體 + 注音 + 雙語</span>
+                    </div>
+                    <div id="modal-chars-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-4">
+                        <!-- 動態產生田字格生字大卡 -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal 底部按鈕列 -->
+            <div class="bg-white px-4 sm:px-6 py-3.5 sm:py-4 border-t-2 border-amber-200 flex flex-wrap items-center justify-between gap-3">
+                <button id="modal-toggle-star-btn" class="btn-3d bg-amber-400 hover:bg-amber-300 text-amber-950 font-black px-5 py-3 rounded-2xl border-b-4 border-amber-600 flex items-center gap-2 shadow text-sm sm:text-base">
+                    <span>⭐</span> <span>我學會了！（領取本關星星）</span>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <a id="modal-game-link" href="#" class="btn-3d bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-3 rounded-2xl border-b-4 border-indigo-800 flex items-center gap-1.5 text-sm sm:text-base shadow">
+                        <span>🚀</span> <span id="modal-game-link-text">進入獨立遊戲子頁</span>
+                    </a>
+                    <button onclick="closePreviewModal()" class="btn-3d bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-3 rounded-2xl border-b-4 border-slate-400 text-sm sm:text-base">
+                        返回目錄
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         互動視窗 2：重置進度確認視窗
+         ========================================== -->
+    <div id="reset-modal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white border-4 border-rose-300 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl space-y-4">
+            <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-3xl mx-auto">
+                ⚠️
+            </div>
+            <h3 class="text-xl font-black text-slate-800">確定要重新計算星星嗎？</h3>
+            <p class="text-slate-600 text-sm">
+                這會把你目前收集到的星星與過關紀錄歸零，讓你重新挑戰一次喔！
+            </p>
+            <div class="flex items-center justify-center gap-3 pt-2">
+                <button onclick="closeResetModal()" class="btn-3d flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-2xl border-b-4 border-slate-400">
+                    取消保留
+                </button>
+                <button onclick="confirmResetProgress()" class="btn-3d flex-1 bg-rose-500 hover:bg-rose-400 text-white font-bold py-3 rounded-2xl border-b-4 border-rose-700">
+                    確定重置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ============================================================================
+         * 📚 《國語一上 第一冊》完整目次與生字資料庫 (LESSONS_DATA)
+         * 完全根據課本拍攝照片建置：
+         * - 前導課程：數字遊戲 (P.6，含 1~10、英文、加、減、等於)、魔法文字 (P.8，8個象形字)
+         * - 第壹單元：一起玩遊戲 (P.14 ~ P.36)
+         * - 第貳單元：快樂的生活 (P.42 ~ P.70)
+         * - 總複習 (P.76)
+         * ============================================================================
+         */
+        const LESSONS_DATA = [
+            // ==================== 前導課程 ====================
+            {
+                id: "intro-numbers",
+                unit: "前導課程",
+                lessonNumber: "前導一",
+                bookPage: "課本 P.6 ~ P.7",
+                title: "數字遊戲（含加減等於）",
+                icon: "🍉",
+                colorTheme: "amber",
+                pageUrl: "intro_numbers.html",
+                isPageReady: false, // 接著做完子頁後可改為 true
+                quizType: "math",
+                description: "跟著狐狸老闆數水果！認識國字「一到十」與「加、減、等於」，還有阿拉伯數字與英文發音喔！",
+                characters: [
+                    { char: "一", zhuyin: "ㄧ", num: "1", en: "One", emoji: "🍉", phrase: "一個西瓜", strokeCount: "1 畫" },
+                    { char: "二", zhuyin: "ㄦˋ", num: "2", en: "Two", emoji: "🍍🍍", phrase: "二顆鳳梨", strokeCount: "2 畫" },
+                    { char: "三", zhuyin: "ㄙㄢ", num: "3", en: "Three", emoji: "🍈🍈🍈", phrase: "三個哈密瓜", strokeCount: "3 畫" },
+                    { char: "四", zhuyin: "ㄙˋ", num: "4", en: "Four", emoji: "🍊🍊🍊🍊", phrase: "四顆橘子", strokeCount: "5 畫" },
+                    { char: "五", zhuyin: "ㄨˇ", num: "5", en: "Five", emoji: "🍐🍐🍐🍐🍐", phrase: "五顆芭樂", strokeCount: "4 畫" },
+                    { char: "六", zhuyin: "ㄌㄧㄡˋ", num: "6", en: "Six", emoji: "🥭×6", phrase: "六顆木瓜", strokeCount: "4 畫" },
+                    { char: "七", zhuyin: "ㄑㄧ", num: "7", en: "Seven", emoji: "🍌×7", phrase: "七根香蕉", strokeCount: "2 畫" },
+                    { char: "八", zhuyin: "ㄅㄚ", num: "8", en: "Eight", emoji: "🍎×8", phrase: "八顆蘋果", strokeCount: "2 畫" },
+                    { char: "九", zhuyin: "ㄐㄧㄡˇ", num: "9", en: "Nine", emoji: "🍑×9", phrase: "九顆水蜜桃", strokeCount: "2 畫" },
+                    { char: "十", zhuyin: "ㄕˊ", num: "10", en: "Ten", emoji: "🍓×10", phrase: "十顆草莓", strokeCount: "2 畫" },
+                    { char: "加", zhuyin: "ㄐㄧㄚ", num: "+", en: "Plus", emoji: "➕", phrase: "一加一", strokeCount: "5 畫" },
+                    { char: "減", zhuyin: "ㄐㄧㄢˇ", num: "-", en: "Minus", emoji: "➖", phrase: "五減二", strokeCount: "12 畫" },
+                    { char: "等於", zhuyin: "ㄉㄥˇ ㄩˊ", num: "=", en: "Equals", emoji: "🟰", phrase: "一加一等於二", strokeCount: "算式符號" }
+                ],
+                mathQuestions: [
+                    { display: "1 + 1 = 2", questionText: "請找出算式裡代表「2 (Two)」的國字！", answerChar: "二" },
+                    { display: "2 + 3 = 5", questionText: "2 加 3 等於 5，請找出答案「5 (Five)」的國字！", answerChar: "五" },
+                    { display: "4 ➕ 2 = 6", questionText: "算式中間的「➕ (Plus)」是哪一個國字呢？", answerChar: "加" },
+                    { display: "7 ➖ 3 = 4", questionText: "算式中間的「➖ (Minus)」是哪一個國字呢？", answerChar: "減" },
+                    { display: "5 + 5 🟰 10", questionText: "算式裡的「🟰 (Equals)」是哪一個國字詞語呢？", answerChar: "等於" },
+                    { display: "8 - 1 = 7", questionText: "8 減 1 等於 7，請找出答案「7 (Seven)」的國字！", answerChar: "七" },
+                    { display: "3 + 3 = 6", questionText: "3 加 3 等於 6，請找出答案「6 (Six)」的國字！", answerChar: "六" },
+                    { display: "10 - 2 = 8", questionText: "10 減 2 等於 8，請找出答案「8 (Eight)」的國字！", answerChar: "八" },
+                    { display: "4 + 5 = 9", questionText: "4 加 5 等於 9，請找出答案「9 (Nine)」的國字！", answerChar: "九" },
+                    { display: "6 + 4 = 10", questionText: "6 加 4 等於 10，請找出答案「10 (Ten)」的國字！", answerChar: "十" }
+                ]
+            },
+            {
+                id: "intro-magic",
+                unit: "前導課程",
+                lessonNumber: "前導二",
+                bookPage: "課本 P.8 ~ P.11",
+                title: "魔法文字（象形變變變）",
+                icon: "🪄",
+                colorTheme: "emerald",
+                pageUrl: "intro_magic.html",
+                isPageReady: false,
+                quizType: "pictograph",
+                description: "古時候的人把看到的東西畫下來，變成了今天的國字！一起認識課本裡的 8 個魔法象形字！",
+                characters: [
+                    { char: "日", zhuyin: "ㄖˋ", emoji: "☀️", en: "Sun", phrase: "日出", strokeCount: "4 畫", originHint: "像天空中圓圓的太陽" },
+                    { char: "山", zhuyin: "ㄕㄢ", emoji: "⛰️", en: "Mountain", phrase: "山洞", strokeCount: "3 畫", originHint: "像三座高高低低的山峰" },
+                    { char: "水", zhuyin: "ㄕㄨㄟˇ", emoji: "🌊", en: "Water", phrase: "水池", strokeCount: "4 畫", originHint: "像彎彎曲曲流動的河水" },
+                    { char: "手", zhuyin: "ㄕㄡˇ", emoji: "✋", en: "Hand", phrase: "手錶", strokeCount: "4 畫", originHint: "像張開五根手指頭的手掌" },
+                    { char: "月", zhuyin: "ㄩㄝˋ", emoji: "🌙", en: "Moon", phrase: "月曆", strokeCount: "4 畫", originHint: "像夜晚彎彎的月亮" },
+                    { char: "木", zhuyin: "ㄇㄨˋ", emoji: "🌳", en: "Tree / Wood", phrase: "木頭", strokeCount: "4 畫", originHint: "上面是樹枝，下面是樹根" },
+                    { char: "人", zhuyin: "ㄖㄣˊ", emoji: "🚶", en: "Person", phrase: "美人魚", strokeCount: "2 畫", originHint: "像一個人側身站立跨步的樣子" },
+                    { char: "門", zhuyin: "ㄇㄣˊ", emoji: "🚪", en: "Door", phrase: "門牙", strokeCount: "8 畫", originHint: "像左右兩扇對開的大門" }
+                ]
+            },
+
+            // ==================== 第壹單元：一起玩遊戲 ====================
+            {
+                id: "lesson-1",
+                unit: "第壹單元：一起玩遊戲",
+                lessonNumber: "第一課",
+                bookPage: "課本 P.18",
+                title: "小船",
+                icon: "⛵",
+                colorTheme: "sky",
+                pageUrl: "lesson1.html",
+                isPageReady: false,
+                quizType: "standard",
+                description: "第壹單元「一起玩遊戲」第一課！認識「小船」的課文與生字（拍下內頁後即可更新專屬生字）。",
+                characters: [
+                    { char: "小", zhuyin: "ㄒㄧㄠˇ", emoji: "⛵", phrase: "小船" },
+                    { char: "船", zhuyin: "ㄔㄨㄢˊ", emoji: "🌊", phrase: "划船" },
+                    { char: "水", zhuyin: "ㄕㄨㄟˇ", emoji: "💧", phrase: "河水" },
+                    { char: "上", zhuyin: "ㄕㄤˋ", emoji: "⬆️", phrase: "水上" },
+                    { char: "走", zhuyin: "ㄗㄡˇ", emoji: "👣", phrase: "開走" }
+                ]
+            },
+            {
+                id: "lesson-2",
+                unit: "第壹單元：一起玩遊戲",
+                lessonNumber: "第二課",
+                bookPage: "課本 P.24",
+                title: "印手印",
+                icon: "🖐️",
+                colorTheme: "rose",
+                pageUrl: "lesson2.html",
+                isPageReady: false,
+                quizType: "standard",
+                description: "第壹單元第二課「印手印」！用小手蓋出好玩的手印畫。",
+                characters: [
+                    { char: "印", zhuyin: "ㄧㄣˋ", emoji: "🖐️", phrase: "手印" },
+                    { char: "手", zhuyin: "ㄕㄡˇ", emoji: "✋", phrase: "小手" },
+                    { char: "大", zhuyin: "ㄉㄚˋ", emoji: "🐘", phrase: "大手" },
+                    { char: "紅", zhuyin: "ㄏㄨㄥˊ", emoji: "🔴", phrase: "紅色" },
+                    { char: "花", zhuyin: "ㄏㄨㄚ", emoji: "🌸", phrase: "開花" }
+                ]
+            },
+            {
+                id: "lesson-3",
+                unit: "第壹單元：一起玩遊戲",
+                lessonNumber: "第三課",
+                bookPage: "課本 P.30",
+                title: "吹泡泡（吳則學）",
+                icon: "🫧",
+                colorTheme: "purple",
+                pageUrl: "lesson3.html",
+                isPageReady: false,
+                quizType: "standard",
+                description: "第壹單元第三課「吹泡泡」！看著泡泡飛上天空變魔術。",
+                characters: [
+                    { char: "吹", zhuyin: "ㄔㄨㄟ", emoji: "🌬️", phrase: "吹風" },
+                    { char: "泡", zhuyin: "ㄆㄠˋ", emoji: "🫧", phrase: "泡泡" },
+                    { char: "飛", zhuyin: "ㄈㄟ", emoji: "🕊️", phrase: "飛高" },
+                    { char: "天", zhuyin: "ㄊㄧㄢ", emoji: "🌤️", phrase: "天空" },
+                    { char: "圓", zhuyin: "ㄩㄢˊ", emoji: "⭕", phrase: "圓圓的" }
+                ]
+            },
+            {
+                id: "review-1",
+                unit: "第壹單元：一起玩遊戲",
+                lessonNumber: "統整活動",
+                bookPage: "課本 P.36",
+                title: "語文天地一",
+                icon: "🎡",
+                colorTheme: "teal",
+                pageUrl: "review1.html",
+                isPageReady: false,
+                quizType: "standard",
+                description: "複習第壹單元「小船、印手印、吹泡泡」學過的所有生字與語詞！",
+                characters: [
+                    { char: "小", zhuyin: "ㄒㄧㄠˇ", emoji: "✨", phrase: "大小" },
+                    { char: "手", zhuyin: "ㄕㄡˇ", emoji: "👏", phrase: "拍手" },
+                    { char: "水", zhuyin: "ㄕㄨㄟˇ", emoji: "🚰", phrase: "喝水" },
+                    { char: "天", zhuyin: "ㄊㄧㄢ", emoji: "🌈", phrase: "今天" }
+                ]
+            },
+
+            // ==================== 第貳單元：快樂的生活 ====================
+            {
+                id: "lesson-4",
+                unit: "第貳單元：快樂的生活",
+                lessonNumber: "第四課",
+                bookPage: "課本 P.46",
+                title: "你好",
+                icon: "👋",
+                colorTheme: "amber",
+                pageUrl: "lesson4.html",
+                isPageReady: false,
+                quizType: "standard",
+                description: "第貳單元「快樂的生活」第四課！笑咪咪地跟新朋友說聲「你好」！",
+                characters: [
+                    { char: "你", zhuyin: "ㄋㄧˇ", emoji: "👉", phrase: "你們" },
+                    { char: "好", zhuyin: "ㄏㄠˇ", emoji: "👍", phrase: "你好" },
+                    { char: "我", zhuyin: "ㄨㄛˇ", emoji: "🙋", phrase: "我們" },
+                    { char: "早", zhuyin: "ㄗㄠˇ", emoji: "🌅", phrase: "早安" }
+                ]
+            },
+            {
+                id: "lesson-5",
+                unit: "第貳單元：快樂的生活",
+                lessonNumber: "第五課",
+                bookPage: "課本 P.52",
+                title: "外星人（林良）",
+                icon: "👽",
+                colorTheme: "indigo",
+                pageUrl: "lesson5.html",
+                isPageReady: false,
+                quizType: "standard",
+                description: "第貳單元第五課「外星人」！和外星人一起探索奇妙的世界。",
+                characters: [
+                    { char: "外", zhuyin: "ㄨㄞˋ", emoji: "🛸", phrase: "外面" },
+                    { char: "星", zhuyin: "ㄒㄧㄥ", emoji: "🌟", phrase: "星星" },
+                    { char: "人", zhuyin: "ㄖㄣˊ", emoji: "🧑‍🚀", phrase: "外星人" },
+                    { char: "來", zhuyin: "ㄌㄞˊ", emoji: "🚀", phrase: "飛來" }
+                ]
+            },
+            {
+                id: "lesson-6",
+                unit: "第貳單元：快樂的生活",
+                lessonNumber: "第六課",
+                bookPage: "課本 P.58",
+                title: "小金魚（陳昇群）",
+                icon: "🐠",
+                colorTheme: "sky",
+                pageUrl: "lesson6.html",
+                isPageReady: false,
+                quizType: "standard",
+                description: "第貳單元第六課「小金魚」！看小金魚在水裡游來游去。",
+                characters: [
+                    { char: "金", zhuyin: "ㄐㄧㄣ", emoji: "🪙", phrase: "金色" },
+                    { char: "魚", zhuyin: "ㄩˊ", emoji: "🐠", phrase: "小金魚" },
+                    { char: "游", zhuyin: "ㄧㄡˊ", emoji: "🏊", phrase: "游泳" },
+                    { char: "目", zhuyin: "ㄇㄨˋ", emoji: "👀", phrase: "目光" }
+                ]
+            },
+            {
+                id: "lesson-7",
+                unit: "第貳單元：快樂的生活",
+                lessonNumber: "第七課",
+                bookPage: "課本 P.64",
+                title: "紅紅的春",
+                icon: "🧧",
+                colorTheme: "rose",
+                pageUrl: "lesson7.html",
+                isPageReady: false,
+                quizType: "standard",
+                description: "第貳單元第七課「紅紅的春」！喜氣洋洋貼春聯、迎新年。",
+                characters: [
+                    { char: "紅", zhuyin: "ㄏㄨㄥˊ", emoji: "🏮", phrase: "紅紅的" },
+                    { char: "春", zhuyin: "ㄔㄨㄣ", emoji: "🧧", phrase: "春天" },
+                    { char: "門", zhuyin: "ㄇㄣˊ", emoji: "🚪", phrase: "大門" },
+                    { char: "家", zhuyin: "ㄐㄧㄚ", emoji: "🏡", phrase: "大家" }
+                ]
+            },
+            {
+                id: "review-2",
+                unit: "第貳單元：快樂的生活",
+                lessonNumber: "統整活動",
+                bookPage: "課本 P.70",
+                title: "語文天地二 ＆ 總複習",
+                icon: "👑",
+                colorTheme: "purple",
+                pageUrl: "final_review.html",
+                isPageReady: false,
+                quizType: "standard",
+                description: "課本 P.70 語文天地二與 P.76 總複習大挑戰！收集滿滿的超級星星！",
+                characters: [
+                    { char: "你", zhuyin: "ㄋㄧˇ", emoji: "🤝", phrase: "你好" },
+                    { char: "星", zhuyin: "ㄒㄧㄥ", emoji: "⭐", phrase: "星光" },
+                    { char: "魚", zhuyin: "ㄩˊ", emoji: "🐟", phrase: "金魚" },
+                    { char: "春", zhuyin: "ㄔㄨㄣ", emoji: "🌱", phrase: "春風" }
+                ]
+            }
+        ];
+
+        // 顏色主題對照表
+        const THEME_STYLES = {
+            amber: {
+                cardBorder: "border-amber-300",
+                headerBg: "from-amber-400 to-orange-500",
+                btnPrimary: "bg-orange-500 hover:bg-orange-400 border-orange-700 text-white"
+            },
+            emerald: {
+                cardBorder: "border-emerald-300",
+                headerBg: "from-emerald-400 to-teal-500",
+                btnPrimary: "bg-emerald-500 hover:bg-emerald-400 border-emerald-700 text-white"
+            },
+            sky: {
+                cardBorder: "border-sky-300",
+                headerBg: "from-sky-400 to-blue-500",
+                btnPrimary: "bg-sky-500 hover:bg-sky-400 border-sky-700 text-white"
+            },
+            rose: {
+                cardBorder: "border-rose-300",
+                headerBg: "from-rose-400 to-pink-500",
+                btnPrimary: "bg-rose-500 hover:bg-rose-400 border-rose-700 text-white"
+            },
+            purple: {
+                cardBorder: "border-purple-300",
+                headerBg: "from-purple-400 to-fuchsia-500",
+                btnPrimary: "bg-purple-500 hover:bg-purple-400 border-purple-700 text-white"
+            },
+            teal: {
+                cardBorder: "border-teal-300",
+                headerBg: "from-teal-400 to-cyan-500",
+                btnPrimary: "bg-teal-500 hover:bg-teal-400 border-teal-700 text-white"
+            },
+            indigo: {
+                cardBorder: "border-indigo-300",
+                headerBg: "from-indigo-500 to-violet-600",
+                btnPrimary: "bg-indigo-600 hover:bg-indigo-500 border-indigo-800 text-white"
+            }
+        };
+
+        // 狀態管理
+        const STORAGE_KEY = "chn_1a_progress_v2";
+        let completedLessons = {};
+        let currentUnitFilter = "全部課程";
+        let activeModalLesson = null;
+        let currentQuizState = null; // { targetChar, promptAudio, mode }
+        let quizStreak = 0;
+
+        // 讀取與儲存進度
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) completedLessons = JSON.parse(saved);
+            } catch (e) {
+                completedLessons = {};
+            }
+        }
+
+        function saveProgress() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(completedLessons));
+            } catch (e) {}
+            updateDashboardStats();
+        }
+
+        // 更新頂部星星數與進度條
+        function updateDashboardStats() {
+            const totalLessons = LESSONS_DATA.length;
+            const completedCount = LESSONS_DATA.filter(l => completedLessons[l.id]).length;
+            const starsPerLesson = 3;
+            const currentStars = completedCount * starsPerLesson;
+            const maxStars = totalLessons * starsPerLesson;
+            const percentage = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+
+            document.getElementById("stars-count").textContent = currentStars;
+            document.getElementById("max-stars-count").textContent = maxStars;
+            document.getElementById("completed-count").textContent = completedCount;
+            document.getElementById("total-lessons-count").textContent = totalLessons;
+            document.getElementById("progress-percentage").textContent = `${percentage}%`;
+            document.getElementById("progress-bar").style.width = `${percentage}%`;
+        }
+
+        // 渲染單元分類標籤
+        function renderUnitTabs() {
+            const units = ["全部課程", ...new Set(LESSONS_DATA.map(item => item.unit))];
+            const tabsContainer = document.getElementById("unit-tabs");
+
+            tabsContainer.innerHTML = units.map(unit => {
+                const isActive = unit === currentUnitFilter;
+                const activeClasses = isActive
+                    ? "bg-orange-500 text-white border-orange-700 shadow-md scale-105"
+                    : "bg-white text-slate-600 border-amber-300 hover:bg-amber-50";
+
+                const icon = unit === "全部課程" ? "🌟" : unit === "前導課程" ? "🚀" : "📁";
+
+                return `
+                    <button 
+                        onclick="selectUnitFilter('${unit}')"
+                        class="btn-3d shrink-0 font-black px-4 sm:px-5 py-2.5 rounded-2xl border-2 border-b-4 text-sm sm:text-base transition-all ${activeClasses}">
+                        ${icon} ${unit}
+                    </button>
+                `;
+            }).join("");
+        }
+
+        function selectUnitFilter(unit) {
+            currentUnitFilter = unit;
+            renderUnitTabs();
+            renderLessonCards();
+        }
+
+        // 渲染目錄課程卡片
+        function renderLessonCards() {
+            const grid = document.getElementById("lessons-grid");
+            const filteredLessons = currentUnitFilter === "全部課程"
+                ? LESSONS_DATA
+                : LESSONS_DATA.filter(l => l.unit === currentUnitFilter);
+
+            grid.innerHTML = filteredLessons.map(lesson => {
+                const isDone = !!completedLessons[lesson.id];
+                const theme = THEME_STYLES[lesson.colorTheme] || THEME_STYLES.amber;
+
+                // 渲染每個生字的小田字格預覽 (包含注音、若是數字遊戲還包含阿拉伯數字與英文)
+                const charBoxesHtml = lesson.characters.map(c => {
+                    const speechPayload = c.en 
+                        ? `${c.char}，${c.phrase}`
+                        : `${c.char}，${c.phrase}`;
+
+                    const topBadge = c.num !== undefined
+                        ? `<span class="en-badge bg-indigo-600 text-white text-[11px] font-bold px-1.5 py-0.2 rounded-md shadow-sm">${c.num}</span>`
+                        : c.emoji
+                        ? `<span class="text-xs">${c.emoji}</span>`
+                        : "";
+
+                    const bottomEn = c.en
+                        ? `<div class="en-badge text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1.5 rounded mt-0.5">${c.en}</div>`
+                        : "";
+
+                    return `
+                        <button 
+                            onclick="event.stopPropagation(); speakCardPreview('${c.char}', '${c.phrase}', '${c.en || ''}')"
+                            title="點擊聽發音：${c.char} (${c.phrase})"
+                            class="bg-white rounded-2xl p-1.5 border-2 border-amber-200 hover:border-rose-400 hover:scale-105 active:scale-95 transition-all shadow-sm flex flex-col items-center group">
+                            
+                            <!-- 上方阿拉伯數字或小圖示 -->
+                            <div class="w-full flex items-center justify-between px-1 mb-1">
+                                ${topBadge}
+                                <span class="text-[10px] font-bold text-slate-400">${c.phrase}</span>
+                            </div>
+
+                            <!-- 課本田字格 + 右側黃底直式注音 -->
+                            <div class="flex items-stretch border-2 border-rose-400 rounded-lg overflow-hidden bg-white">
+                                <div class="tian-zi-ge w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center !border-0">
+                                    <span class="kaiti-char text-2xl sm:text-3xl font-bold text-slate-800 group-hover:text-rose-600 relative z-10">${c.char}</span>
+                                </div>
+                                <div class="zhuyin-box w-5 text-[10px] sm:text-[11px] py-0.5 select-none">
+                                    ${c.zhuyin}
+                                </div>
+                            </div>
+
+                            ${bottomEn}
+                        </button>
+                    `;
+                }).join("");
+
+                // 星星顯示
+                const starsHtml = [1, 2, 3].map(() => `
+                    <span class="text-xl sm:text-2xl transition-transform ${isDone ? 'star-pop filter-none' : 'opacity-25 grayscale'}">⭐</span>
+                `).join("");
+
+                return `
+                    <article class="bg-white rounded-3xl border-4 ${theme.cardBorder} shadow-lg hover:shadow-xl transition-all flex flex-col justify-between overflow-hidden">
+                        
+                        <!-- 卡片頂部標題區 -->
+                        <div class="bg-gradient-to-r ${theme.headerBg} px-5 py-4 text-white flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/95 flex items-center justify-center text-2xl sm:text-3xl shadow-sm shrink-0">
+                                    ${lesson.icon}
+                                </div>
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        <span class="text-xs font-black bg-black/25 px-2.5 py-0.5 rounded-full">${lesson.lessonNumber}</span>
+                                        <span class="text-xs font-bold bg-white/25 px-2.5 py-0.5 rounded-full">${lesson.bookPage}</span>
+                                    </div>
+                                    <h3 class="text-lg sm:text-2xl font-black tracking-wide mt-0.5 drop-shadow-sm">${lesson.title}</h3>
+                                </div>
+                            </div>
+                            <!-- 星星徽章 -->
+                            <div class="flex items-center bg-white/90 px-2.5 py-1 rounded-2xl shadow-inner shrink-0">
+                                ${starsHtml}
+                            </div>
+                        </div>
+
+                        <!-- 卡片中間：田字格生字預覽 -->
+                        <div class="p-4 sm:p-5 flex-grow flex flex-col justify-between space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-2.5">
+                                    <span class="text-xs sm:text-sm font-black text-slate-600 flex items-center gap-1">
+                                        <span>👇</span> 點選生字格直接聽發音：
+                                    </span>
+                                    <span class="text-xs font-black px-2.5 py-0.5 rounded-full border ${isDone ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-50 text-amber-800 border-amber-200'}">
+                                        ${isDone ? '✅ 你已過關' : '🚩 準備挑戰'}
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 bg-amber-50/70 p-3 rounded-2xl border-2 border-amber-100">
+                                    ${charBoxesHtml}
+                                </div>
+                            </div>
+
+                            <p class="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                                ${lesson.description}
+                            </p>
+                        </div>
+
+                        <!-- 卡片底部按鈕 -->
+                        <div class="px-4 sm:px-5 pb-5 pt-1 flex items-center gap-2">
+                            <button 
+                                onclick="readEntireLesson('${lesson.id}')"
+                                class="btn-3d bg-sky-100 hover:bg-sky-200 text-sky-800 font-black px-3.5 py-3 rounded-2xl border-b-4 border-sky-300 text-xs sm:text-sm flex items-center justify-center gap-1 shrink-0">
+                                <span>🔊</span> <span>整課朗讀</span>
+                            </button>
+
+                            <button 
+                                onclick="enterLesson('${lesson.id}')"
+                                class="btn-3d flex-grow ${theme.btnPrimary} font-black px-4 py-3 rounded-2xl border-b-4 text-sm sm:text-base flex items-center justify-center gap-1.5 shadow-md">
+                                <span>🎮</span> <span>開始學習與挑戰</span>
+                            </button>
+
+                            <button 
+                                onclick="toggleLessonComplete('${lesson.id}', event)"
+                                class="btn-3d ${isDone ? 'bg-amber-400 text-amber-950 border-amber-600' : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-amber-100'} font-black px-3.5 py-3 rounded-2xl border-b-4 text-sm flex items-center justify-center"
+                                title="領取過關星星">
+                                ⭐
+                            </button>
+                        </div>
+                    </article>
+                `;
+            }).join("");
+        }
+
+        /**
+         * ============================================================================
+         * 🔊 雙語語音系統 (台灣國語 zh-TW ＆ 英語 en-US，全面稱呼「你」)
+         * ============================================================================
+         */
+        function speakText(text, lang = 'zh-TW', rate = 0.85, onEndCallback = null) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.rate = rate;
+            utterance.pitch = 1.05;
+
+            const voices = window.speechSynthesis.getVoices();
+            if (lang === 'zh-TW') {
+                const twVoice = voices.find(v => v.lang.includes('zh-TW') || v.lang.includes('zh_TW') || v.name.includes('Taiwan') || v.name.includes('Meijia'));
+                if (twVoice) utterance.voice = twVoice;
+            } else if (lang === 'en-US') {
+                const enVoice = voices.find(v => v.lang.includes('en-US') || v.lang.includes('en_US'));
+                if (enVoice) utterance.voice = enVoice;
+            }
+
+            if (onEndCallback) {
+                utterance.onend = onEndCallback;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // 點擊首頁小字卡時，先唸國語，若有英文再接著唸英文
+        function speakCardPreview(char, phrase, enWord) {
+            if (enWord) {
+                speakText(`${char}，${phrase}`, 'zh-TW', 0.85, () => {
+                    setTimeout(() => {
+                        speakText(enWord, 'en-US', 0.85);
+                    }, 180);
+                });
+            } else {
+                speakText(`${char}，${phrase}`, 'zh-TW', 0.85);
+            }
+        }
+
+        function speakWelcome() {
+            const completedCount = LESSONS_DATA.filter(l => completedLessons[l.id]).length;
+            if (completedCount === 0) {
+                speakText("你好！歡迎來到國字大冒險！我們今天先從前導課程的「數字遊戲」和「魔法文字」開始挑戰吧！");
+            } else {
+                speakText(`你超棒的！你已經完成了 ${completedCount} 個關卡，收集到 ${completedCount * 3} 顆星星囉！繼續加油！`);
+            }
+        }
+
+        function readEntireLesson(lessonId) {
+            const lesson = LESSONS_DATA.find(l => l.id === lessonId);
+            if (!lesson) return;
+            const charListText = lesson.characters.map(c => `${c.char}，${c.phrase}`).join("。 ");
+            speakText(`${lesson.lessonNumber}，${lesson.title}。現在唸給你聽：${charListText}`);
+        }
+
+        /**
+         * ============================================================================
+         * 🎮 進入關卡與生字大卡練習室 Modal
+         * ============================================================================
+         */
+        function enterLesson(lessonId) {
+            const lesson = LESSONS_DATA.find(l => l.id === lessonId);
+            if (!lesson) return;
+
+            if (lesson.isPageReady) {
+                window.location.href = lesson.pageUrl;
+                return;
+            }
+
+            activeModalLesson = lesson;
+            currentQuizState = null;
+            quizStreak = 0;
+
+            document.getElementById("modal-icon").textContent = lesson.icon;
+            document.getElementById("modal-lesson-num").textContent = `${lesson.unit} ・ ${lesson.lessonNumber}`;
+            document.getElementById("modal-page-badge").textContent = lesson.bookPage;
+            document.getElementById("modal-lesson-title").textContent = lesson.title;
+            document.getElementById("modal-lesson-desc").textContent = lesson.description;
+            document.getElementById("quiz-streak-badge").textContent = `連對 0 題 🔥`;
+            document.getElementById("quiz-status-text").textContent = "點選右邊的按鈕出題，再從下方字卡點選正確答案！";
+            document.getElementById("quiz-visual-board").classList.add("hidden");
+            document.getElementById("repeat-quiz-btn").classList.add("hidden");
+
+            // 根據課程類型調整特殊挑戰按鈕文字
+            const specialBtn = document.getElementById("special-quiz-btn");
+            if (lesson.quizType === "math") {
+                specialBtn.innerHTML = `<span>🧮</span> 加減法算式挑戰`;
+            } else if (lesson.quizType === "pictograph") {
+                specialBtn.innerHTML = `<span>🔍</span> 看象形圖猜國字`;
+            } else {
+                specialBtn.innerHTML = `<span>🎯</span> 看造詞找國字`;
+            }
+
+            // 設定獨立遊戲子頁按鈕連結
+            const gameLink = document.getElementById("modal-game-link");
+            gameLink.href = lesson.pageUrl;
+            document.getElementById("modal-game-link-text").textContent = `前往 ${lesson.pageUrl} 遊戲頁`;
+
+            // 綁定整課朗讀
+            document.getElementById("modal-read-all-btn").onclick = () => readEntireLesson(lesson.id);
+
+            updateModalStarButton();
+            renderModalCharacters();
+
+            document.getElementById("preview-modal").classList.remove("hidden");
+            speakText(`歡迎來到${lesson.title}！你可以點下面的字卡聽發音，或是按出題按鈕讓我考考你喔！`);
+        }
+
+        function renderModalCharacters() {
+            if (!activeModalLesson) return;
+            const container = document.getElementById("modal-chars-grid");
+
+            container.innerHTML = activeModalLesson.characters.map((item, idx) => {
+                // 針對「數字遊戲」顯示大阿拉伯數字與英文按鈕
+                const topHeaderHtml = item.num !== undefined
+                    ? `
+                        <div class="w-full flex items-center justify-between bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200">
+                            <span class="en-badge text-2xl sm:text-3xl font-black text-indigo-600">${item.num}</span>
+                            <span class="en-badge text-sm sm:text-base font-bold text-indigo-900 bg-white px-2.5 py-0.5 rounded-lg border border-indigo-200 shadow-sm">
+                                ${item.en}
+                            </span>
+                        </div>
+                    `
+                    : `
+                        <div class="w-full flex items-center justify-between bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">
+                            <span class="text-2xl">${item.emoji || '✨'}</span>
+                            <span class="text-xs font-bold text-amber-900 bg-white px-2 py-0.5 rounded-lg border border-amber-200">
+                                ${item.strokeCount || '重點生字'}
+                            </span>
+                        </div>
+                    `;
+
+                const originHintHtml = item.originHint
+                    ? `<div class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 w-full text-center">💡 ${item.originHint}</div>`
+                    : `<div class="text-xs font-bold text-slate-500">${item.emoji || ''} ${item.strokeCount || ''}</div>`;
+
+                const enBtnHtml = item.en
+                    ? `
+                        <button 
+                            onclick="event.stopPropagation(); speakText('${item.en}', 'en-US', 0.85)"
+                            class="btn-3d bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold text-xs px-2.5 py-1.5 rounded-xl border-b-2 border-indigo-300 flex items-center gap-1">
+                            <span>🔤</span> 唸英文 ${item.en}
+                        </button>
+                    `
+                    : "";
+
+                return `
+                    <div 
+                        onclick="handleCharacterCardClick(${idx})"
+                        id="modal-char-card-${idx}"
+                        class="cursor-pointer bg-white rounded-3xl p-3.5 border-4 border-amber-200 hover:border-orange-400 shadow-md flex flex-col items-center justify-between gap-2.5 transition-all hover:-translate-y-1 active:translate-y-0">
+                        
+                        ${topHeaderHtml}
+
+                        <!-- 大田字格 + 右側直式注音欄 (完全仿照課本排版) -->
+                        <div class="flex items-stretch border-3 border-rose-400 rounded-2xl overflow-hidden shadow-sm my-1">
+                            <div class="tian-zi-ge w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center !border-0">
+                                <span class="kaiti-char ${item.char.length > 1 ? 'text-4xl sm:text-5xl' : 'text-6xl sm:text-7xl'} font-bold text-slate-800 relative z-10">${item.char}</span>
+                            </div>
+                            <div class="zhuyin-box w-8 sm:w-9 text-sm sm:text-base py-1 select-none">
+                                ${item.zhuyin}
+                            </div>
+                        </div>
+
+                        <!-- 課本造詞與雙語發音列 -->
+                        <div class="w-full text-center space-y-1.5">
+                            <div class="text-base sm:text-lg font-black text-slate-800 bg-amber-50/80 py-1 rounded-xl border border-amber-100">
+                                ${item.phrase}
+                            </div>
+                            ${originHintHtml}
+                            <div class="flex items-center justify-center gap-1.5 pt-1">
+                                <button 
+                                    onclick="event.stopPropagation(); speakText('${item.char}，${item.phrase}', 'zh-TW', 0.85)"
+                                    class="btn-3d bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold text-xs px-2.5 py-1.5 rounded-xl border-b-2 border-sky-300 flex items-center gap-1">
+                                    <span>🔊</span> 國語
+                                </button>
+                                ${enBtnHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // 點擊 Modal 內的字卡：若在測驗中則判斷答案，否則朗讀雙語發音
+        function handleCharacterCardClick(charIndex) {
+            if (!activeModalLesson) return;
+            const item = activeModalLesson.characters[charIndex];
+            if (!item) return;
+
+            if (currentQuizState) {
+                if (item.char === currentQuizState.targetChar) {
+                    quizStreak++;
+                    document.getElementById("quiz-streak-badge").textContent = `連對 ${quizStreak} 題 🔥`;
+                    document.getElementById("quiz-status-text").innerHTML = `🎉 <strong class="text-emerald-700">太棒了！你答對了！就是「${item.char}」（${item.phrase}）！</strong>`;
+                    
+                    const praiseMsg = item.en
+                        ? `太棒了！你答對了！就是 ${item.char}，${item.phrase}！`
+                        : `太棒了！你答對了！就是 ${item.char}，${item.phrase}！`;
+
+                    speakText(praiseMsg, 'zh-TW', 0.9);
+                    fireConfetti();
+                    currentQuizState = null;
+                    document.getElementById("repeat-quiz-btn").classList.add("hidden");
+                } else {
+                    quizStreak = 0;
+                    document.getElementById("quiz-streak-badge").textContent = `連對 0 題 🔥`;
+                    document.getElementById("quiz-status-text").innerHTML = `💡 你點到的是「<strong>${item.char}</strong>」，再找找看哪一個才是正確答案喔！`;
+                    speakText(`這個是 ${item.char}。沒關係，你再試一次看看喔！`, 'zh-TW', 0.9);
+                }
+                return;
+            }
+
+            // 一般點字發音
+            speakCardPreview(item.char, item.phrase, item.en || '');
+        }
+
+        // 啟動隨堂小挑戰 (mode: 'listen' 聽音找字 | 'special' 數學算式或象形圖挑戰)
+        function startMiniQuiz(mode) {
+            if (!activeModalLesson || !activeModalLesson.characters.length) return;
+            const chars = activeModalLesson.characters;
+            const visualBoard = document.getElementById("quiz-visual-board");
+            const visualContent = document.getElementById("quiz-visual-content");
+            const visualSub = document.getElementById("quiz-visual-sub");
+            const repeatBtn = document.getElementById("repeat-quiz-btn");
+            repeatBtn.classList.remove("hidden");
+
+            // 模式 A：數字遊戲的加減法算式挑戰
+            if (mode === 'special' && activeModalLesson.quizType === 'math' && activeModalLesson.mathQuestions) {
+                const qList = activeModalLesson.mathQuestions;
+                const randomQ = qList[Math.floor(Math.random() * qList.length)];
+                
+                currentQuizState = {
+                    targetChar: randomQ.answerChar,
+                    promptAudio: randomQ.questionText
+                };
+
+                visualBoard.classList.remove("hidden");
+                visualContent.textContent = randomQ.display;
+                visualSub.textContent = randomQ.questionText;
+                document.getElementById("quiz-status-text").innerHTML = `🧮 <strong>算算看：</strong>${randomQ.questionText}`;
+                speakText(randomQ.questionText, 'zh-TW', 0.85);
+                return;
+            }
+
+            // 模式 B：魔法文字的象形線索挑戰
+            if (mode === 'special' && activeModalLesson.quizType === 'pictograph') {
+                const randomItem = chars[Math.floor(Math.random() * chars.length)];
+                const promptText = `請你看一看圖案：${randomItem.originHint}，而且可以造詞「${randomItem.phrase}」，是哪一個國字呢？`;
+                
+                currentQuizState = {
+                    targetChar: randomItem.char,
+                    promptAudio: promptText
+                };
+
+                visualBoard.classList.remove("hidden");
+                visualContent.textContent = `${randomItem.emoji}  ➔  ？`;
+                visualSub.textContent = `線索：${randomItem.originHint}（${randomItem.phrase}）`;
+                document.getElementById("quiz-status-text").innerHTML = `🔍 <strong>象形大偵探：</strong>${randomItem.originHint}，請點選對應的國字！`;
+                speakText(promptText, 'zh-TW', 0.85);
+                return;
+            }
+
+            // 模式 C：聽音找字 (支援國語 + 英語提示)
+            const randomItem = chars[Math.floor(Math.random() * chars.length)];
+            const enHint = randomItem.en ? `，英文是 ${randomItem.en}` : '';
+            const numHint = randomItem.num !== undefined ? `（${randomItem.num}）` : '';
+            const promptText = `請你仔細聽，找出「${randomItem.phrase}」的「${randomItem.char}」在哪裡？`;
+
+            currentQuizState = {
+                targetChar: randomItem.char,
+                promptAudio: promptText
+            };
+
+            if (mode === 'special') {
+                visualBoard.classList.remove("hidden");
+                visualContent.textContent = `${randomItem.emoji || '✨'} ${randomItem.phrase.replace(randomItem.char, ' ❓ ')}`;
+                visualSub.textContent = `請找出空缺裡的國字！`;
+            } else {
+                visualBoard.classList.add("hidden");
+            }
+
+            document.getElementById("quiz-status-text").innerHTML = `👂 <strong>請你聽聲音找國字：</strong>哪一個是「<strong>${randomItem.phrase}</strong>」${numHint}${enHint}？`;
+            speakText(promptText, 'zh-TW', 0.85);
+        }
+
+        function repeatCurrentQuizAudio() {
+            if (currentQuizState && currentQuizState.promptAudio) {
+                speakText(currentQuizState.promptAudio, 'zh-TW', 0.85);
+            }
+        }
+
+        function updateModalStarButton() {
+            if (!activeModalLesson) return;
+            const btn = document.getElementById("modal-toggle-star-btn");
+            const isDone = !!completedLessons[activeModalLesson.id];
+
+            if (isDone) {
+                btn.className = "btn-3d bg-emerald-500 hover:bg-emerald-400 text-white font-black px-5 py-3 rounded-2xl border-b-4 border-emerald-700 flex items-center gap-2 shadow text-sm sm:text-base";
+                btn.innerHTML = `<span>✅</span> <span>你已完成本課（獲得 3 顆星！）</span>`;
+            } else {
+                btn.className = "btn-3d bg-amber-400 hover:bg-amber-300 text-amber-950 font-black px-5 py-3 rounded-2xl border-b-4 border-amber-600 flex items-center gap-2 shadow text-sm sm:text-base";
+                btn.innerHTML = `<span>⭐</span> <span>我學會了！（領取本關星星）</span>`;
+            }
+
+            btn.onclick = () => {
+                toggleLessonComplete(activeModalLesson.id);
+                updateModalStarButton();
+            };
+        }
+
+        function closePreviewModal() {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            document.getElementById("preview-modal").classList.add("hidden");
+            activeModalLesson = null;
+            currentQuizState = null;
+        }
+
+        /**
+         * ============================================================================
+         * ⭐ 過關標記與慶祝彩帶特效
+         * ============================================================================
+         */
+        function toggleLessonComplete(lessonId, event) {
+            if (event) event.stopPropagation();
+
+            const wasDone = !!completedLessons[lessonId];
+            if (wasDone) {
+                delete completedLessons[lessonId];
+            } else {
+                completedLessons[lessonId] = true;
+                fireConfetti();
+                const lesson = LESSONS_DATA.find(l => l.id === lessonId);
+                if (lesson) {
+                    speakText(`太棒了！恭喜你完成${lesson.title}，獲得三顆閃亮亮的星星！`);
+                }
+            }
+
+            saveProgress();
+            renderLessonCards();
+        }
+
+        function openResetModal() {
+            document.getElementById("reset-modal").classList.remove("hidden");
+        }
+
+        function closeResetModal() {
+            document.getElementById("reset-modal").classList.add("hidden");
+        }
+
+        function confirmResetProgress() {
+            completedLessons = {};
+            saveProgress();
+            renderLessonCards();
+            closeResetModal();
+            speakText("進度已經重新整理好囉，我們重新出發吧！");
+        }
+
+        // 彩帶慶祝動畫
+        function fireConfetti() {
+            const canvas = document.getElementById("confetti-canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const colors = ["#F59E0B", "#10B981", "#3B82F6", "#EC4899", "#8B5CF6", "#FBBF24"];
+            const particles = Array.from({ length: 80 }, () => ({
+                x: canvas.width / 2 + (Math.random() - 0.5) * 220,
+                y: canvas.height * 0.45,
+                vx: (Math.random() - 0.5) * 16,
+                vy: -Math.random() * 14 - 4,
+                size: Math.random() * 10 + 6,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * 360,
+                vRot: (Math.random() - 0.5) * 12
+            }));
+
+            let frame = 0;
+            function animate() {
+                frame++;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.42;
+                    p.rotation += p.vRot;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                });
+
+                if (frame < 90) {
+                    requestAnimationFrame(animate);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // 啟動首頁
+        window.onload = function () {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+            loadProgress();
+            updateDashboardStats();
+            renderUnitTabs();
+            renderLessonCards();
+        };
+    </script>
+</body>
+</html>
