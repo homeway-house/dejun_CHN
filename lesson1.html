@@ -215,23 +215,28 @@
             <p class="text-xs text-slate-500 mt-1">兩隻小鳥一左一右 🔊</p>
           </div>
 
-          <!-- 一前一後 -->
-          <div onclick="speakText('一前一後。馬路上，黃色車子在前面，藍色車子在後面。')" class="cursor-pointer bg-white hover:bg-emerald-50/70 transition rounded-2xl p-4 border-2 border-emerald-300 shadow-sm flex flex-col items-center text-center group">
-            <div class="w-full bg-slate-200 rounded-xl p-3 mb-3 flex items-center justify-around h-36 relative overflow-hidden">
-              <div class="flex flex-col items-center bg-sky-200 px-3 py-1.5 rounded-2xl border border-sky-400 shadow-sm">
-                <span class="text-2xl">🚙</span>
-                <span class="kaiti text-2xl font-black text-sky-950">後</span>
-              </div>
-              <div class="text-slate-500 font-black text-xl">➡️</div>
-              <div class="flex flex-col items-center bg-yellow-200 px-3 py-1.5 rounded-2xl border border-yellow-500 shadow-sm">
-                <span class="text-2xl">🚕</span>
-                <span class="kaiti text-2xl font-black text-amber-950">前</span>
+          <!-- 一前一後（修正：車頭朝左 ⬅️，左邊黃車是「前」，右邊藍車是「後」） -->
+          <div onclick="speakText('一前一後。車子往左邊開，黃色車子在前面，藍色車子跟在後面。')" class="cursor-pointer bg-white hover:bg-emerald-50/70 transition rounded-2xl p-4 border-2 border-emerald-300 shadow-sm flex flex-col items-center text-center group">
+            <div class="w-full bg-slate-200 rounded-xl p-3 mb-3 flex flex-col justify-center h-36 relative overflow-hidden">
+              <div class="text-[11px] font-black text-slate-600 mb-1.5 tracking-wider">⬅️ 車頭前進方向 ⬅️</div>
+              <div class="flex items-center justify-around w-full">
+                <!-- 左側：車頭在最前面的黃車（前） -->
+                <div class="flex flex-col items-center bg-yellow-200 px-3 py-1.5 rounded-2xl border-2 border-yellow-500 shadow-sm">
+                  <span class="text-2xl">🚕</span>
+                  <span class="kaiti text-2xl font-black text-amber-950">前</span>
+                </div>
+                <div class="text-slate-600 font-black text-xl">⬅️</div>
+                <!-- 右側：跟在車尾後面的藍車（後） -->
+                <div class="flex flex-col items-center bg-sky-200 px-3 py-1.5 rounded-2xl border-2 border-sky-400 shadow-sm">
+                  <span class="text-2xl">🚙</span>
+                  <span class="kaiti text-2xl font-black text-sky-950">後</span>
+                </div>
               </div>
             </div>
             <div class="kaiti text-3xl font-black text-emerald-900 tracking-widest group-hover:scale-105 transition">
               一<span class="text-amber-600">前</span>一<span class="text-sky-600">後</span>
             </div>
-            <p class="text-xs text-slate-500 mt-1">兩台小車一前一後 🔊</p>
+            <p class="text-xs text-slate-500 mt-1">車頭朝左：黃車在前、藍車在後 🔊</p>
           </div>
         </div>
       </div>
@@ -261,17 +266,18 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 2: 開小船尋寶遊戲（純國字方向盤） ==================== -->
-    <section id="tab-boat" class="hidden space-y-5">
+    <!-- ==================== TAB 2: 開小船尋寶遊戲（純「上下左右」國字舵盤 ＋ 船隊「前後」專區） ==================== -->
+    <section id="tab-boat" class="hidden space-y-6">
+      <!-- 第一部分：池塘 2D 地圖（專心練 上、下、左、右） -->
       <div class="bg-white rounded-3xl p-5 shadow-lg border-4 border-sky-300">
         <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
           <div>
-            <span class="bg-sky-100 text-sky-800 text-xs font-black px-3 py-1 rounded-full border border-sky-300">課文實境遊戲：小船水上走，一左一右向前走</span>
+            <span class="bg-sky-100 text-sky-800 text-xs font-black px-3 py-1 rounded-full border border-sky-300">池塘地圖特訓：上、下、左、右</span>
             <h2 class="text-2xl font-black text-sky-900 mt-1 flex items-center gap-2">
-              ⛵ 小船水上尋寶：認國字開小船！
+              ⛵ 小船水上尋寶：認「上、下、左、右」開小船！
             </h2>
             <p class="text-slate-600 text-sm">
-              注意喔！下面的方向按鈕**沒有箭頭**，只有國字！請點選正確的國字按鈕，開小船去找**小魚 🐟** 和 **寶箱 🎁**！
+              下面的方向按鈕**沒有畫箭頭**，只有**「上、下、左、右」**四個國字！點選國字開小船去找**小魚 🐟** 加加油！
             </p>
           </div>
 
@@ -292,7 +298,7 @@
             <span class="text-3xl" id="boatMissionEmoji">🐟</span>
             <div>
               <div id="boatMissionTitle" class="font-black text-sky-950 text-base sm:text-lg">
-                請點選下方的「上、下、左、右、前、後」國字按鈕，開小船去接小魚加加油！
+                請點選下方的「上、下、左、右」國字按鈕，開小船去接小魚加加油！
               </div>
               <div id="boatMissionSub" class="text-xs sm:text-sm text-sky-700 font-bold">
                 目前收集小魚：<span id="fishCountText" class="text-rose-600 font-black text-base">0</span> 隻
@@ -304,40 +310,39 @@
           </button>
         </div>
 
-        <!-- 遊戲主體：左邊池塘棋盤 + 右邊純國字方向控制器 -->
+        <!-- 遊戲主體：左邊池塘棋盤 + 右邊純國字方向控制器（上、下、左、右） -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           <!-- 5x5 水上池塘棋盤 -->
           <div class="lg:col-span-7 flex flex-col items-center">
-            <!-- 池塘外框方位標示 -->
             <div class="w-full max-w-md bg-gradient-to-b from-cyan-300 via-sky-400 to-blue-500 p-3 sm:p-4 rounded-3xl shadow-inner border-4 border-sky-600 relative">
-              <div class="text-center text-white/90 text-xs font-bold mb-1.5 tracking-widest">
-                ⬆️ 池塘北岸（上 / 前） ⬆️
+              <div class="text-center text-white/95 text-xs font-bold mb-1.5 tracking-widest">
+                ⬆️ 池塘上方（上） ⬆️
               </div>
               <div id="pondGrid" class="grid grid-cols-5 gap-1.5 sm:gap-2 aspect-square w-full bg-sky-200/40 p-2 rounded-2xl">
                 <!-- 5x5 格子由 JS 動態生成 -->
               </div>
-              <div class="text-center text-white/90 text-xs font-bold mt-1.5 tracking-widest">
-                ⬇️ 池塘南岸（下 / 後） ⬇️
+              <div class="text-center text-white/95 text-xs font-bold mt-1.5 tracking-widest">
+                ⬇️ 池塘下方（下） ⬇️
               </div>
             </div>
           </div>
 
-          <!-- 右側：純國字方向操作舵盤（完全不畫箭頭，訓練直接認國字！） -->
+          <!-- 右側：純國字「上下左右」四向操作舵盤 -->
           <div class="lg:col-span-5 bg-amber-50/90 rounded-3xl p-5 border-4 border-amber-300 shadow-md flex flex-col items-center">
             <div class="flex items-center justify-between w-full mb-3">
               <span class="font-black text-amber-950 text-base flex items-center gap-1.5">
-                <span>🎮</span> 國字方向舵盤
+                <span>🎮</span> 四向國字舵盤（上下左右）
               </span>
               <button onclick="shufflePadLayout()" class="text-xs bg-white hover:bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-400 shadow-sm">
-                🔀 打亂按鈕位置（防背位置！）
+                🔀 打亂按鈕位置
               </button>
             </div>
             <p class="text-xs text-amber-800 mb-4 text-center">
-              提示：點選國字就會往那個方向走一步。想確定自己是不是真的認得字，可以按「🔀 打亂按鈕位置」喔！
+              提示：點選「上、下、左、右」讓小船移動。按「🔀 打亂按鈕位置」可以測試是不是真的認得國字喔！
             </p>
 
-            <!-- 十字形控制器（預設按空間排，也可切換隨機打亂排） -->
-            <div id="controlPadContainer" class="w-full max-w-xs">
+            <!-- 十字形控制器（只有 上、下、左、右） -->
+            <div id="controlPadContainer" class="w-full max-w-xs flex justify-center">
               <!-- 由 JS 渲染控制按鈕 -->
             </div>
 
@@ -345,6 +350,49 @@
             <div id="boatActionLog" class="mt-4 w-full bg-white rounded-2xl p-3 border-2 border-amber-200 text-center font-bold text-slate-700 text-sm">
               ⛵ 小船準備出發囉！
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第二部分：專門練習「前、後」的河道排隊小遊戲（船頭統一朝左 ⬅️） -->
+      <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-lg border-4 border-teal-300">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <span class="bg-teal-100 text-teal-800 text-xs font-black px-3 py-1 rounded-full border border-teal-300">直線水道特訓：前、後（船頭朝左前進 ⬅️）</span>
+            <h3 class="text-xl sm:text-2xl font-black text-teal-950 mt-1">
+              🚤 小船排隊向前走：認識「前」與「後」
+            </h3>
+            <p class="text-slate-600 text-sm">
+              所有的船頭都朝向**左邊 ⬅️** 前進！點選**「前」**讓帆船往前開，點選**「後」**讓帆船往後退！
+            </p>
+          </div>
+        </div>
+
+        <!-- 河道橫向視覺舞台（船頭全部朝左 ⬅️） -->
+        <div class="bg-gradient-to-r from-sky-300 via-cyan-300 to-sky-400 rounded-3xl p-4 sm:p-6 border-4 border-sky-500 shadow-inner mb-4">
+          <div class="text-center text-sky-950 font-black text-xs sm:text-sm mb-3 bg-white/80 py-1 px-4 rounded-full w-fit mx-auto shadow-sm">
+            ⬅️ 船頭前進方向（左邊是「前」，右邊是「後」） ⬅️
+          </div>
+
+          <div id="riverLaneGrid" class="grid grid-cols-5 gap-2 items-center bg-white/40 p-3 rounded-2xl border-2 border-white/70">
+            <!-- 由 JS 渲染 5 格橫向水道（最左：領頭快艇 🚤，中間：我們的小船 ⛵，最右：小鴨 🦆） -->
+          </div>
+        </div>
+
+        <!-- 前 / 後 控制按鈕與狀態提示 -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-teal-50 p-4 rounded-2xl border-2 border-teal-200">
+          <div id="riverStatusText" class="font-black text-teal-950 text-base sm:text-lg text-center sm:text-left">
+            ⛵ 小船現在排在隊伍中間！點選「前」或「後」試試看！
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <button onclick="moveRiverBoat('前')" class="bg-amber-500 hover:bg-amber-600 border-amber-700 text-white w-24 h-20 rounded-2xl shadow-md border-b-4 btn-3d flex flex-col items-center justify-center">
+              <span class="kaiti text-4xl font-black leading-none">前</span>
+              <span class="zhuyin-box text-xs font-bold mt-1">ㄑㄧㄢˊ</span>
+            </button>
+            <button onclick="moveRiverBoat('後')" class="bg-sky-600 hover:bg-sky-700 border-sky-800 text-white w-24 h-20 rounded-2xl shadow-md border-b-4 btn-3d flex flex-col items-center justify-center">
+              <span class="kaiti text-4xl font-black leading-none">後</span>
+              <span class="zhuyin-box text-xs font-bold mt-1">ㄏㄡˋ</span>
+            </button>
           </div>
         </div>
       </div>
@@ -368,9 +416,9 @@
           </div>
         </div>
 
-        <!-- 互動視覺舞台（還原課本 P.22 魔法熊與周邊物品） -->
+        <!-- 互動視覺舞台（還原課本 P.22 魔法熊與周邊物品，車頭與箭頭統一朝左 ⬅️） -->
         <div id="bearStageBox" class="bg-gradient-to-b from-indigo-50 via-sky-50 to-emerald-50 rounded-3xl p-6 border-4 border-indigo-200 shadow-inner mb-6">
-          <!-- 由 JS 根據題目動態呈現魔法熊舞台或車子/小鳥舞台 -->
+          <!-- 由 JS 根據題目動態呈現魔法熊舞台或車子舞台 -->
         </div>
 
         <!-- 題目文字框 -->
@@ -515,12 +563,13 @@
       if (tabId === 'tab-boat') {
         renderPondGrid();
         renderControlPad();
+        renderRiverLane();
       } else if (tabId === 'tab-bear') {
         renderBearQuiz();
       }
     }
 
-    // ==================== 六大方向國字資料庫 ====================
+    // ==================== 六大方向國字資料庫（車頭與箭頭全部朝左 ⬅️） ====================
     const DIRECTION_DATA = [
       {
         pairTitle: '垂直方向：一上一下',
@@ -597,12 +646,12 @@
             zhuyin: ['ㄑ', 'ㄧ', 'ㄢˊ'],
             eng: 'FRONT / FORWARD',
             words: '前面、向前走、一前一後',
-            memoryTip: '眼睛看著的「前面」，小船向前走！',
+            memoryTip: '車頭朝左開，開在最前頭就是「前」！',
             visualHtml: `
               <div class="flex items-center gap-1">
-                <span class="text-lg opacity-40">🚙</span>
-                <span class="text-xs font-bold text-sky-700">➡️</span>
-                <span class="text-2xl bg-sky-200 px-2 py-0.5 rounded-lg border-2 border-sky-600">🚕前</span>
+                <span class="text-xs font-bold text-sky-700">⬅️</span>
+                <span class="text-2xl bg-yellow-200 px-2 py-0.5 rounded-lg border-2 border-amber-600 font-black">前🚕</span>
+                <span class="text-lg opacity-35">🚙</span>
               </div>
             `
           },
@@ -611,12 +660,12 @@
             zhuyin: ['ㄏ', 'ㄡˋ'],
             eng: 'BACK / BEHIND',
             words: '後面、後退、一前一後',
-            memoryTip: '跟在車子屁股的「後面」！',
+            memoryTip: '車頭朝左開，跟在車尾屁股後面就是「後」！',
             visualHtml: `
               <div class="flex items-center gap-1">
-                <span class="text-2xl bg-sky-200 px-2 py-0.5 rounded-lg border-2 border-sky-600">後🚙</span>
-                <span class="text-xs font-bold text-sky-700">➡️</span>
-                <span class="text-lg opacity-40">🚕</span>
+                <span class="text-xs font-bold text-sky-700">⬅️</span>
+                <span class="text-lg opacity-35">🚕</span>
+                <span class="text-2xl bg-sky-200 px-2 py-0.5 rounded-lg border-2 border-sky-600 font-black">🚙後</span>
               </div>
             `
           }
@@ -692,7 +741,7 @@
 
     function startFlashQuiz() {
       currentFlashTarget = ALL_SIX_DIRS[Math.floor(Math.random() * ALL_SIX_DIRS.length)];
-      renderFlashChoices(true); // 每次出題自動洗牌位置，確保他是認國字而不是背位置
+      renderFlashChoices(true);
       document.getElementById('flashPromptText').innerHTML = `👂 請聽題目：找出「<span class="text-rose-600 font-black">${currentFlashTarget.hint}</span>」是哪一個國字？`;
       speakText(`請找出：${currentFlashTarget.hint}，是哪一個字？`);
     }
@@ -720,7 +769,7 @@
       }
     }
 
-    // ==================== TAB 2: 開小船尋寶遊戲 ====================
+    // ==================== TAB 2-A: 開小船尋寶遊戲（只保留 上、下、左、右） ====================
     const GRID_SIZE = 5;
     let boatPos = { r: 2, c: 2 };
     let fishPos = { r: 0, c: 2 };
@@ -734,9 +783,7 @@
       { char: '上', zhuyin: 'ㄕㄤˋ', dr: -1, dc: 0, phrase: '小船向上走' },
       { char: '下', zhuyin: 'ㄒㄧㄚˋ', dr: 1, dc: 0, phrase: '小船向下走' },
       { char: '左', zhuyin: 'ㄗㄨㄛˇ', dr: 0, dc: -1, phrase: '小船向左走' },
-      { char: '右', zhuyin: 'ㄧㄡˋ', dr: 0, dc: 1, phrase: '小船向右走' },
-      { char: '前', zhuyin: 'ㄑㄧㄢˊ', dr: -1, dc: 0, phrase: '小船向前走' },
-      { char: '後', zhuyin: 'ㄏㄡˋ', dr: 1, dc: 0, phrase: '小船向後退' }
+      { char: '右', zhuyin: 'ㄧㄡˋ', dr: 0, dc: 1, phrase: '小船向右走' }
     ];
 
     function spawnNewFish() {
@@ -791,36 +838,30 @@
     function renderControlPad() {
       const container = document.getElementById('controlPadContainer');
       if (!padRandomized) {
-        // 空間對應排版（讓孩子建立方位與國字的連結，但完全不畫箭頭）
+        // 標準十字排版（上、下、左、右，不畫箭頭）
         container.innerHTML = `
           <div class="grid grid-cols-3 gap-2.5 items-center justify-items-center">
             <div></div>
-            <div class="flex gap-1.5">
-              ${createPadBtnHtml(PAD_BUTTONS[0], 'bg-rose-500 hover:bg-rose-600 border-rose-700')}
-              ${createPadBtnHtml(PAD_BUTTONS[4], 'bg-sky-600 hover:bg-sky-700 border-sky-800')}
-            </div>
+            ${createPadBtnHtml(PAD_BUTTONS[0], 'bg-rose-500 hover:bg-rose-600 border-rose-700')}
             <div></div>
 
             ${createPadBtnHtml(PAD_BUTTONS[2], 'bg-amber-500 hover:bg-amber-600 border-amber-700')}
             <div class="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-amber-300 flex flex-col items-center justify-center text-xs font-black text-amber-900">
               <span>⛵</span>
-              <span class="kaiti text-base">位置</span>
+              <span class="kaiti text-base">小船</span>
             </div>
             ${createPadBtnHtml(PAD_BUTTONS[3], 'bg-purple-500 hover:bg-purple-600 border-purple-700')}
 
             <div></div>
-            <div class="flex gap-1.5">
-              ${createPadBtnHtml(PAD_BUTTONS[1], 'bg-emerald-600 hover:bg-emerald-700 border-emerald-800')}
-              ${createPadBtnHtml(PAD_BUTTONS[5], 'bg-teal-600 hover:bg-teal-700 border-teal-800')}
-            </div>
+            ${createPadBtnHtml(PAD_BUTTONS[1], 'bg-emerald-600 hover:bg-emerald-700 border-emerald-800')}
             <div></div>
           </div>
         `;
       } else {
-        // 隨機洗牌兩列排版（測試純認字能力，防止背按鈕位置）
+        // 隨機一列洗牌（測試純認字能力，防止背按鈕位置）
         const shuffled = [...PAD_BUTTONS].sort(() => Math.random() - 0.5);
         container.innerHTML = `
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 gap-3">
             ${shuffled.map(btn => createPadBtnHtml(btn, 'bg-indigo-600 hover:bg-indigo-700 border-indigo-800')).join('')}
           </div>
         `;
@@ -840,7 +881,7 @@
     function shufflePadLayout() {
       padRandomized = !padRandomized;
       renderControlPad();
-      speakText(padRandomized ? '按鈕位置已經打亂囉！仔細看國字再開船！' : '恢復原本的方向排列！');
+      speakText(padRandomized ? '按鈕位置已經打亂囉！仔細看上、下、左、右的國字再開船！' : '恢復十字方向排列！');
     }
 
     function setBoatMode(mode) {
@@ -852,8 +893,8 @@
         tBtn.className = 'bg-sky-600 text-white font-black px-4 py-2 rounded-2xl shadow border-b-4 border-sky-800 text-sm';
         cBtn.className = 'bg-amber-100 text-amber-900 font-black px-4 py-2 rounded-2xl border-2 border-amber-400 text-sm';
         document.getElementById('boatMissionEmoji').textContent = '🐟';
-        document.getElementById('boatMissionTitle').textContent = '請點選「上、下、左、右、前、後」國字按鈕，開小船去找小魚！';
-        speakText('自由找小魚模式！請點選方向國字，開小船去找小魚加加油！');
+        document.getElementById('boatMissionTitle').textContent = '請點選「上、下、左、右」國字按鈕，開小船去找小魚！';
+        speakText('自由找小魚模式！請點選上、下、左、右的國字，開小船去找小魚加加油！');
         renderPondGrid();
       } else {
         cBtn.className = 'bg-amber-500 text-white font-black px-4 py-2 rounded-2xl shadow border-b-4 border-amber-700 text-sm';
@@ -864,7 +905,6 @@
     }
 
     function nextBoatCommand() {
-      // 挑選不會撞牆的合法方向指令
       const validBtns = PAD_BUTTONS.filter(b => {
         const nr = boatPos.r + b.dr;
         const nc = boatPos.c + b.dc;
@@ -880,7 +920,7 @@
       if (boatMode === 'command' && targetCommandDir) {
         speakText(`請找出「${targetCommandDir.char}」，讓${targetCommandDir.phrase}！`);
       } else {
-        speakText('請點選上、下、左、右、前、後的國字按鈕，開小船去找小魚！');
+        speakText('請點選上、下、左、右的國字按鈕，開小船去找小魚！');
       }
     }
 
@@ -888,7 +928,6 @@
       const btnObj = PAD_BUTTONS.find(b => b.char === charClicked);
       if (!btnObj) return;
 
-      // 若在船長指令模式，先檢查是否按對指令字
       if (boatMode === 'command' && targetCommandDir) {
         if (charClicked !== targetCommandDir.char) {
           speakText(`你點的是「${charClicked}」，船長請你點「${targetCommandDir.char}」喔！`);
@@ -908,7 +947,6 @@
       boatPos = { r: nr, c: nc };
       document.getElementById('boatActionLog').innerHTML = `⛵ <span class="kaiti text-xl text-sky-800 font-black">${btnObj.phrase}</span>（你點了「<span class="kaiti text-xl text-rose-600 font-black">${charClicked}</span>」）`;
 
-      // 若已經開啟隨機打亂模式，每次移動後重新洗牌位置
       if (padRandomized) renderControlPad();
       renderPondGrid();
 
@@ -917,7 +955,6 @@
         speakText(`太棒了！${btnObj.phrase}！`);
         setTimeout(() => nextBoatCommand(), 1400);
       } else {
-        // 自由找小魚模式：檢查有沒有碰到小魚
         if (boatPos.r === fishPos.r && boatPos.c === fishPos.c) {
           fishCollected++;
           document.getElementById('fishCountText').textContent = fishCollected;
@@ -931,7 +968,76 @@
       }
     }
 
-    // ==================== TAB 3: 魔法熊看圖找位置（對應課本 P.22） ====================
+    // ==================== TAB 2-B: 水上小船排隊走（專門練「前、後」，船頭朝左 ⬅️） ====================
+    // 5 格橫向水道：index 0 (最左/最前：領頭快艇 🚤)，index 1~3 (小船可移動範圍)，index 4 (最右/最後：小鴨 🦆)
+    let riverBoatIdx = 2;
+
+    function renderRiverLane() {
+      const container = document.getElementById('riverLaneGrid');
+      if (!container) return;
+      let html = '';
+      for (let i = 0; i < 5; i++) {
+        if (i === 0) {
+          html += `
+            <div class="bg-rose-100/90 border-2 border-rose-400 rounded-2xl p-2 flex flex-col items-center justify-center h-24 shadow-sm">
+              <span class="text-3xl">🚤</span>
+              <span class="text-xs font-black text-rose-900 mt-1">領頭船(最前)</span>
+            </div>
+          `;
+        } else if (i === 4) {
+          html += `
+            <div class="bg-sky-100/90 border-2 border-sky-400 rounded-2xl p-2 flex flex-col items-center justify-center h-24 shadow-sm">
+              <span class="text-3xl">🦆</span>
+              <span class="text-xs font-black text-sky-900 mt-1">小鴨(最後)</span>
+            </div>
+          `;
+        } else if (i === riverBoatIdx) {
+          html += `
+            <div class="bg-yellow-200 border-4 border-amber-500 rounded-2xl p-2 flex flex-col items-center justify-center h-24 shadow-md scale-105 transition">
+              <span class="text-4xl boat-anim">⛵</span>
+              <span class="kaiti text-sm font-black text-amber-950 mt-0.5">我們的小船</span>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="bg-white/50 border border-dashed border-sky-400 rounded-2xl p-2 flex flex-col items-center justify-center h-24 text-sky-700 font-bold text-sm">
+              ⬅️ 水道
+            </div>
+          `;
+        }
+      }
+      container.innerHTML = html;
+    }
+
+    function moveRiverBoat(dirChar) {
+      if (dirChar === '前') {
+        // 船頭朝左，所以往「前」是往左移 (index 變小)
+        if (riverBoatIdx > 1) {
+          riverBoatIdx--;
+          renderRiverLane();
+          updateStarDisplay(1);
+          document.getElementById('riverStatusText').innerHTML = `⛵ 你點了「<span class="kaiti text-2xl text-rose-600 font-black">前</span>」！小船順著船頭往<span class="text-rose-600 font-black">前</span>開，離領頭船更近了！`;
+          speakText('前！小船向前走！');
+        } else {
+          document.getElementById('riverStatusText').innerHTML = `🚤 已經開到最<span class="kaiti text-2xl text-rose-600 font-black">前</span>面囉！試試看點「後」！`;
+          speakText('已經在最前面囉！試試看點後！');
+        }
+      } else if (dirChar === '後') {
+        // 往「後」是往右退 (index 變大)
+        if (riverBoatIdx < 3) {
+          riverBoatIdx++;
+          renderRiverLane();
+          updateStarDisplay(1);
+          document.getElementById('riverStatusText').innerHTML = `⛵ 你點了「<span class="kaiti text-2xl text-sky-700 font-black">後</span>」！小船往<span class="text-sky-700 font-black">後</span>退，離後面的小鴨更近了！`;
+          speakText('後！小船向後退！');
+        } else {
+          document.getElementById('riverStatusText').innerHTML = `🦆 已經退到最<span class="kaiti text-2xl text-sky-700 font-black">後</span>面囉！試試看點「前」！`;
+          speakText('已經在最後面囉！試試看點前！');
+        }
+      }
+    }
+
+    // ==================== TAB 3: 魔法熊看圖找位置（車頭與箭頭全部朝左 ⬅️） ====================
     const BEAR_QUESTIONS = [
       {
         stageType: 'bear',
@@ -943,7 +1049,7 @@
       {
         stageType: 'bear',
         highlight: 'pinwheel',
-        questionHtml: '看圖想一想：風車 Pinwheel 🌀 在魔法熊的哪一邊？',
+        questionHtml: '看圖想一想：風車 🎡 在魔法熊的哪一邊？',
         voiceText: '看圖想一想，風車在魔法熊的哪一邊？',
         answer: '左'
       },
@@ -964,15 +1070,15 @@
       {
         stageType: 'cars',
         highlight: 'yellowCar',
-        questionHtml: '看馬路上（一前一後）：黃色車子 🚕 開在藍色車子的哪一個位置？',
-        voiceText: '看馬路上，黃色車子開在藍色車子的哪一個位置？是前還是後？',
+        questionHtml: '車子往左邊開 ⬅️：黃色車子 🚕 開在藍色車子的哪一個位置？',
+        voiceText: '車子往左邊開，黃色車子開在藍色車子的哪一個位置？是前還是後？',
         answer: '前'
       },
       {
         stageType: 'cars',
         highlight: 'blueCar',
-        questionHtml: '看馬路上（一前一後）：藍色車子 🚙 跟在黃色車子的哪一個位置？',
-        voiceText: '藍色車子跟在黃色車子的哪一個位置？',
+        questionHtml: '車子往左邊開 ⬅️：藍色車子 🚙 跟在黃色車子的哪一個位置？',
+        voiceText: '車子往左邊開，藍色車子跟在黃色車子的哪一個位置？',
         answer: '後'
       }
     ];
@@ -1020,20 +1126,25 @@
           </div>
         `;
       } else {
+        // 車頭朝左 ⬅️：黃色車子在左邊（前），藍色車子在右邊（後）
         stage.innerHTML = `
           <div class="flex flex-col items-center justify-center py-6">
-            <div class="text-xs font-bold text-slate-500 mb-3">➡️ 車子前進方向 ➡️</div>
+            <div class="text-sm font-black text-slate-700 bg-white px-4 py-1 rounded-full border border-slate-300 mb-3 shadow-sm">
+              ⬅️ 車頭前進方向（往左邊開） ⬅️
+            </div>
             <div class="w-full max-w-md bg-slate-700 rounded-3xl p-6 border-4 border-slate-500 flex items-center justify-around relative">
-              <div class="px-4 py-3 rounded-2xl border-4 transition flex flex-col items-center ${q.highlight === 'blueCar' ? 'bg-yellow-200 border-amber-400 scale-110 shadow-lg' : 'bg-sky-100 border-sky-300'}">
-                <span class="text-5xl">🚙</span>
-                <span class="text-xs font-black text-slate-800 mt-1">藍色車子</span>
-              </div>
-
-              <div class="text-white font-black text-3xl">➡️ ➡️</div>
-
+              <!-- 左邊：車頭在最前面的黃色車子（前） -->
               <div class="px-4 py-3 rounded-2xl border-4 transition flex flex-col items-center ${q.highlight === 'yellowCar' ? 'bg-yellow-200 border-amber-400 scale-110 shadow-lg' : 'bg-amber-100 border-amber-300'}">
                 <span class="text-5xl">🚕</span>
                 <span class="text-xs font-black text-slate-800 mt-1">黃色車子</span>
+              </div>
+
+              <div class="text-white font-black text-3xl">⬅️ ⬅️</div>
+
+              <!-- 右邊：跟在後面的藍色車子（後） -->
+              <div class="px-4 py-3 rounded-2xl border-4 transition flex flex-col items-center ${q.highlight === 'blueCar' ? 'bg-yellow-200 border-amber-400 scale-110 shadow-lg' : 'bg-sky-100 border-sky-300'}">
+                <span class="text-5xl">🚙</span>
+                <span class="text-xs font-black text-slate-800 mt-1">藍色車子</span>
               </div>
             </div>
           </div>
@@ -1084,7 +1195,7 @@
         num: 2,
         text: '一左一右向前走。',
         voice: '一左一右向前走。',
-        emoji: '🧭➡️',
+        emoji: '🧭⬅️',
         highlightChars: ['左', '右', '前']
       },
       {
@@ -1179,6 +1290,7 @@
       renderFlashChoices(false);
       renderPondGrid();
       renderControlPad();
+      renderRiverLane();
       renderBearQuiz();
       renderLessonTextAndChars();
     });
