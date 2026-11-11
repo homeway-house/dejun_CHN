@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>第一課：小船 — 上下左右前後大冒險</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap');
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(180deg, #E0F2FE 0%, #BAE6FD 50%, #F0FDF4 100%);
+      min-height: 100vh;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    /* 標準楷體國字 */
+    .kaiti {
+      font-family: 'DFKai-SB', 'BiauKai', '標楷體', 'Kaiti TC', 'KaiTi', serif;
+    }
+
+    /* 田字格設計 */
+    .tian-zi-ge {
+      position: relative;
+      background-color: #FFFDF9;
+      border: 3px solid #F59E0B;
+      border-radius: 14px;
+      box-shadow: inset 0 0 6px rgba(245, 158, 11, 0.15);
+    }
+    .tian-zi-ge::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      border-top: 1.5px dashed #FCD34D;
+      pointer-events: none;
+    }
+    .tian-zi-ge::after {
+      content: '';
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      border-left: 1.5px dashed #FCD34D;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    /* 直式注音排版 */
+    .zhuyin-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.05;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    /* 水波紋動畫 */
+    @keyframes floatBoat {
+      0%, 100% { transform: translateY(0px) rotate(-2deg); }
+      50% { transform: translateY(-6px) rotate(3deg); }
+    }
+    .boat-anim {
+      animation: floatBoat 2.4s ease-in-out infinite;
+    }
+
+    @keyframes swimFish {
+      0%, 100% { transform: translateX(0px) scaleX(1); }
+      50% { transform: translateX(6px) scaleX(1); }
+    }
+    .fish-anim {
+      animation: swimFish 1.8s ease-in-out infinite;
+    }
+
+    /* 按鈕立體按壓感 */
+    .btn-3d {
+      transition: all 0.12s ease;
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+    }
+
+    /* 隱藏注音模式 */
+    body.hide-zhuyin .zhuyin-box {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="pb-16 text-slate-800">
+
+  <!-- 頂部導覽列 -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md shadow-md border-b-4 border-sky-300 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-3.5 py-2 rounded-2xl border-2 border-sky-300 flex items-center gap-1.5 transition">
+          <span>🏠</span>
+          <span class="hidden sm:inline">回首頁目錄</span>
+        </a>
+        <div>
+          <span class="text-xs font-extrabold bg-sky-500 text-white px-2.5 py-0.5 rounded-full">第壹單元 • 第一課</span>
+          <h1 class="text-xl sm:text-2xl font-black text-sky-900 flex items-center gap-2 mt-0.5">
+            ⛵ 一、小船（方向國字特訓）
+          </h1>
+        </div>
+      </div>
+
+      <!-- 工具區：純國字/注音切換 + 星星積分 -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button id="toggleZhuyinBtn" onclick="toggleZhuyin()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-2 rounded-2xl border-2 border-amber-300 text-sm flex items-center gap-1.5 shadow-sm transition">
+          <span id="zhuyinIcon">👁️</span>
+          <span id="zhuyinBtnText">注音：顯示中</span>
+        </button>
+
+        <div class="bg-yellow-50 border-2 border-yellow-400 px-3.5 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-sm">
+          <span class="text-2xl">⭐</span>
+          <span id="scoreDisplay" class="text-xl font-black text-amber-600">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 四大模式切換分頁 -->
+    <div class="max-w-5xl mx-auto mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <button onclick="switchTab('tab-direction')" id="btn-tab-direction" class="tab-btn bg-sky-600 text-white font-black py-2.5 px-3 rounded-2xl shadow border-b-4 border-sky-800 flex items-center justify-center gap-1.5 text-sm sm:text-base transition">
+        <span>🧭</span> 1. 認方向國字
+      </button>
+      <button onclick="switchTab('tab-boat')" id="btn-tab-boat" class="tab-btn bg-white hover:bg-sky-50 text-sky-800 font-bold py-2.5 px-3 rounded-2xl shadow-sm border-2 border-sky-200 flex items-center justify-center gap-1.5 text-sm sm:text-base transition">
+        <span>⛵</span> 2. 開小船尋寶
+      </button>
+      <button onclick="switchTab('tab-bear')" id="btn-tab-bear" class="tab-btn bg-white hover:bg-sky-50 text-sky-800 font-bold py-2.5 px-3 rounded-2xl shadow-sm border-2 border-sky-200 flex items-center justify-center gap-1.5 text-sm sm:text-base transition">
+        <span>🐻</span> 3. 看圖找位置
+      </button>
+      <button onclick="switchTab('tab-text')" id="btn-tab-text" class="tab-btn bg-white hover:bg-sky-50 text-sky-800 font-bold py-2.5 px-3 rounded-2xl shadow-sm border-2 border-sky-200 flex items-center justify-center gap-1.5 text-sm sm:text-base transition">
+        <span>📖</span> 4. 課文與生字
+      </button>
+    </div>
+  </header>
+
+  <!-- 主內容容器 -->
+  <main class="max-w-5xl mx-auto px-4 pt-6">
+
+    <!-- ==================== TAB 1: 認方向國字（上下左右前後） ==================== -->
+    <section id="tab-direction" class="space-y-6">
+      <!-- 頂部引導橫幅 -->
+      <div class="bg-white rounded-3xl p-5 shadow-lg border-4 border-sky-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="text-5xl bg-sky-100 p-3 rounded-2xl border-2 border-sky-300">🧭</div>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-black text-sky-900">空間方向六大主角：上、下、左、右、前、後</h2>
+            <p class="text-slate-600 text-sm sm:text-base mt-0.5">
+              點選國字聽發音，看看每個字的形狀秘密！右上角可以切換「隱藏注音」直接挑戰認國字喔！
+            </p>
+          </div>
+        </div>
+        <button onclick="speakText('我們一起來認識六個方向國字：上、下、左、右、前、後！點一點卡片聽聲音吧！')" class="shrink-0 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black px-4 py-2.5 rounded-2xl shadow border-b-4 border-amber-600 btn-3d flex items-center gap-2">
+          <span>🔊</span> 語音導覽
+        </button>
+      </div>
+
+      <!-- 三組相反詞對照區（對應課本 P.22：一上一下、一左一右、一前一後） -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5" id="directionPairsContainer">
+        <!-- 由 JS 動態渲染 上/下、左/右、前/後 -->
+      </div>
+
+      <!-- 課本 P.22 相反方位詞小劇場（一上一下 / 一左一右 / 一前一後） -->
+      <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl p-5 sm:p-6 shadow-md border-4 border-emerald-200">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <h3 class="text-lg sm:text-xl font-black text-emerald-900 flex items-center gap-2">
+            <span>🌳</span> 課本第 22 頁：看圖找一找不同的位置（點卡片聽句子）
+          </h3>
+          <span class="text-xs font-bold bg-emerald-600 text-white px-3 py-1 rounded-full">相反方向一起記更快！</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <!-- 一上一下 -->
+          <div onclick="speakText('一上一下。小熊在樹上，另一隻小熊在樹下。')" class="cursor-pointer bg-white hover:bg-emerald-50/70 transition rounded-2xl p-4 border-2 border-emerald-300 shadow-sm flex flex-col items-center text-center group">
+            <div class="w-full bg-emerald-100/80 rounded-xl p-3 mb-3 flex flex-col items-center justify-center h-36 relative">
+              <div class="flex items-center gap-2 bg-amber-200/90 px-3 py-1 rounded-full border border-amber-400 shadow-sm mb-2">
+                <span class="text-2xl">🐻</span>
+                <span class="kaiti text-2xl font-black text-emerald-950">上</span>
+              </div>
+              <div class="w-24 h-2 bg-amber-700 rounded-full my-1"></div>
+              <div class="flex items-center gap-2 bg-sky-200/90 px-3 py-1 rounded-full border border-sky-400 shadow-sm mt-2">
+                <span class="text-2xl">🐻</span>
+                <span class="kaiti text-2xl font-black text-sky-950">下</span>
+              </div>
+            </div>
+            <div class="kaiti text-3xl font-black text-emerald-900 tracking-widest group-hover:scale-105 transition">
+              一<span class="text-rose-600">上</span>一<span class="text-sky-600">下</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">兩隻小熊在樹上和樹下 🔊</p>
+          </div>
+
+          <!-- 一左一右 -->
+          <div onclick="speakText('一左一右。樹枝上，一隻白鳥在左邊，一隻白鳥在右邊。')" class="cursor-pointer bg-white hover:bg-emerald-50/70 transition rounded-2xl p-4 border-2 border-emerald-300 shadow-sm flex flex-col items-center text-center group">
+            <div class="w-full bg-emerald-100/80 rounded-xl p-3 mb-3 flex items-center justify-around h-36 relative">
+              <div class="flex flex-col items-center bg-amber-200/90 px-3.5 py-2 rounded-2xl border border-amber-400 shadow-sm">
+                <span class="text-2xl">🕊️</span>
+                <span class="kaiti text-2xl font-black text-amber-950 mt-0.5">左</span>
+              </div>
+              <div class="text-emerald-700 font-bold text-lg">🌿</div>
+              <div class="flex flex-col items-center bg-purple-200/90 px-3.5 py-2 rounded-2xl border border-purple-400 shadow-sm">
+                <span class="text-2xl">🕊️</span>
+                <span class="kaiti text-2xl font-black text-purple-950 mt-0.5">右</span>
+              </div>
+            </div>
+            <div class="kaiti text-3xl font-black text-emerald-900 tracking-widest group-hover:scale-105 transition">
+              一<span class="text-amber-600">左</span>一<span class="text-purple-600">右</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">兩隻小鳥一左一右 🔊</p>
+          </div>
+
+          <!-- 一前一後 -->
+          <div onclick="speakText('一前一後。馬路上，黃色車子在前面，藍色車子在後面。')" class="cursor-pointer bg-white hover:bg-emerald-50/70 transition rounded-2xl p-4 border-2 border-emerald-300 shadow-sm flex flex-col items-center text-center group">
+            <div class="w-full bg-slate-200 rounded-xl p-3 mb-3 flex items-center justify-around h-36 relative overflow-hidden">
+              <div class="flex flex-col items-center bg-sky-200 px-3 py-1.5 rounded-2xl border border-sky-400 shadow-sm">
+                <span class="text-2xl">🚙</span>
+                <span class="kaiti text-2xl font-black text-sky-950">後</span>
+              </div>
+              <div class="text-slate-500 font-black text-xl">➡️</div>
+              <div class="flex flex-col items-center bg-yellow-200 px-3 py-1.5 rounded-2xl border border-yellow-500 shadow-sm">
+                <span class="text-2xl">🚕</span>
+                <span class="kaiti text-2xl font-black text-amber-950">前</span>
+              </div>
+            </div>
+            <div class="kaiti text-3xl font-black text-emerald-900 tracking-widest group-hover:scale-105 transition">
+              一<span class="text-amber-600">前</span>一<span class="text-sky-600">後</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">兩台小車一前一後 🔊</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 隨堂閃卡快問快答（聽音認國字） -->
+      <div class="bg-white rounded-3xl p-6 shadow-lg border-4 border-amber-300">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 class="text-xl font-black text-amber-900 flex items-center gap-2">
+              <span>⚡</span> 方向國字閃電快選（不看箭頭只看國字！）
+            </h3>
+            <p id="flashPromptText" class="text-slate-600 font-bold mt-1">點選「出題考考我」，聽聲音找出正確的方向國字！</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="repeatFlashQuestion()" class="bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-3.5 py-2 rounded-xl border-2 border-sky-300">
+              🔊 再聽一次
+            </button>
+            <button onclick="startFlashQuiz()" class="bg-amber-500 hover:bg-amber-600 text-white font-black px-5 py-2 rounded-xl shadow border-b-4 border-amber-700 btn-3d">
+              🎲 出題考考我
+            </button>
+          </div>
+        </div>
+
+        <div id="flashChoicesGrid" class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          <!-- 動態產生六個方向純國字按鈕 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: 開小船尋寶遊戲（純國字方向盤） ==================== -->
+    <section id="tab-boat" class="hidden space-y-5">
+      <div class="bg-white rounded-3xl p-5 shadow-lg border-4 border-sky-300">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+          <div>
+            <span class="bg-sky-100 text-sky-800 text-xs font-black px-3 py-1 rounded-full border border-sky-300">課文實境遊戲：小船水上走，一左一右向前走</span>
+            <h2 class="text-2xl font-black text-sky-900 mt-1 flex items-center gap-2">
+              ⛵ 小船水上尋寶：認國字開小船！
+            </h2>
+            <p class="text-slate-600 text-sm">
+              注意喔！下面的方向按鈕**沒有箭頭**，只有國字！請點選正確的國字按鈕，開小船去找**小魚 🐟** 和 **寶箱 🎁**！
+            </p>
+          </div>
+
+          <!-- 模式切換：自由尋寶 vs 聽指令走 -->
+          <div class="flex flex-wrap gap-2 shrink-0">
+            <button id="boatModeTreasureBtn" onclick="setBoatMode('treasure')" class="bg-sky-600 text-white font-black px-4 py-2 rounded-2xl shadow border-b-4 border-sky-800 text-sm">
+              🐟 自由找小魚模式
+            </button>
+            <button id="boatModeCommandBtn" onclick="setBoatMode('command')" class="bg-amber-100 text-amber-900 font-black px-4 py-2 rounded-2xl border-2 border-amber-400 text-sm">
+              📢 船長指令挑戰
+            </button>
+          </div>
+        </div>
+
+        <!-- 任務提示列 -->
+        <div id="boatMissionBanner" class="bg-sky-50 border-2 border-sky-300 rounded-2xl p-3.5 mb-5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl" id="boatMissionEmoji">🐟</span>
+            <div>
+              <div id="boatMissionTitle" class="font-black text-sky-950 text-base sm:text-lg">
+                請點選下方的「上、下、左、右、前、後」國字按鈕，開小船去接小魚加加油！
+              </div>
+              <div id="boatMissionSub" class="text-xs sm:text-sm text-sky-700 font-bold">
+                目前收集小魚：<span id="fishCountText" class="text-rose-600 font-black text-base">0</span> 隻
+              </div>
+            </div>
+          </div>
+          <button onclick="speakCurrentBoatMission()" class="bg-white hover:bg-sky-100 text-sky-800 font-bold px-3 py-2 rounded-xl border-2 border-sky-300 shrink-0 text-sm">
+            🔊 聽提示
+          </button>
+        </div>
+
+        <!-- 遊戲主體：左邊池塘棋盤 + 右邊純國字方向控制器 -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <!-- 5x5 水上池塘棋盤 -->
+          <div class="lg:col-span-7 flex flex-col items-center">
+            <!-- 池塘外框方位標示 -->
+            <div class="w-full max-w-md bg-gradient-to-b from-cyan-300 via-sky-400 to-blue-500 p-3 sm:p-4 rounded-3xl shadow-inner border-4 border-sky-600 relative">
+              <div class="text-center text-white/90 text-xs font-bold mb-1.5 tracking-widest">
+                ⬆️ 池塘北岸（上 / 前） ⬆️
+              </div>
+              <div id="pondGrid" class="grid grid-cols-5 gap-1.5 sm:gap-2 aspect-square w-full bg-sky-200/40 p-2 rounded-2xl">
+                <!-- 5x5 格子由 JS 動態生成 -->
+              </div>
+              <div class="text-center text-white/90 text-xs font-bold mt-1.5 tracking-widest">
+                ⬇️ 池塘南岸（下 / 後） ⬇️
+              </div>
+            </div>
+          </div>
+
+          <!-- 右側：純國字方向操作舵盤（完全不畫箭頭，訓練直接認國字！） -->
+          <div class="lg:col-span-5 bg-amber-50/90 rounded-3xl p-5 border-4 border-amber-300 shadow-md flex flex-col items-center">
+            <div class="flex items-center justify-between w-full mb-3">
+              <span class="font-black text-amber-950 text-base flex items-center gap-1.5">
+                <span>🎮</span> 國字方向舵盤
+              </span>
+              <button onclick="shufflePadLayout()" class="text-xs bg-white hover:bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-400 shadow-sm">
+                🔀 打亂按鈕位置（防背位置！）
+              </button>
+            </div>
+            <p class="text-xs text-amber-800 mb-4 text-center">
+              提示：點選國字就會往那個方向走一步。想確定自己是不是真的認得字，可以按「🔀 打亂按鈕位置」喔！
+            </p>
+
+            <!-- 十字形控制器（預設按空間排，也可切換隨機打亂排） -->
+            <div id="controlPadContainer" class="w-full max-w-xs">
+              <!-- 由 JS 渲染控制按鈕 -->
+            </div>
+
+            <!-- 課本句型即時回饋 -->
+            <div id="boatActionLog" class="mt-4 w-full bg-white rounded-2xl p-3 border-2 border-amber-200 text-center font-bold text-slate-700 text-sm">
+              ⛵ 小船準備出發囉！
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: 看圖找位置（課本 P.22 魔法熊情境問答） ==================== -->
+    <section id="tab-bear" class="hidden space-y-6">
+      <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-lg border-4 border-purple-300">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <span class="bg-purple-100 text-purple-800 text-xs font-black px-3 py-1 rounded-full border border-purple-300">對應課本第 22 頁：④ 看圖認識方向 ＆ ⑤ 看圖找位置</span>
+            <h2 class="text-2xl font-black text-purple-950 mt-1">🐻 魔法熊的方向大考驗</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-purple-800 bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200">
+              第 <span id="bearQIndex">1</span> / <span id="bearQTotal">6</span> 題
+            </span>
+            <button onclick="speakBearQuestion()" class="bg-purple-600 hover:bg-purple-700 text-white font-black px-4 py-2 rounded-xl shadow btn-3d text-sm flex items-center gap-1">
+              <span>🔊</span> 唸題目
+            </button>
+          </div>
+        </div>
+
+        <!-- 互動視覺舞台（還原課本 P.22 魔法熊與周邊物品） -->
+        <div id="bearStageBox" class="bg-gradient-to-b from-indigo-50 via-sky-50 to-emerald-50 rounded-3xl p-6 border-4 border-indigo-200 shadow-inner mb-6">
+          <!-- 由 JS 根據題目動態呈現魔法熊舞台或車子/小鳥舞台 -->
+        </div>
+
+        <!-- 題目文字框 -->
+        <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 text-center mb-5">
+          <p id="bearQuestionTitle" class="text-xl sm:text-2xl font-black text-slate-800 kaiti tracking-wide">
+            載入題目中...
+          </p>
+        </div>
+
+        <!-- 六個方向國字作答區 -->
+        <div id="bearAnswerButtons" class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          <!-- 由 JS 生成 上、下、左、右、前、後 國字卡片 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: 第一課課文與生字（P.18~P.23） ==================== -->
+    <section id="tab-text" class="hidden space-y-6">
+      <!-- 課文互動朗讀區 -->
+      <div class="bg-white rounded-3xl p-6 shadow-lg border-4 border-emerald-300">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div>
+            <span class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full border border-emerald-300">課本第 18～19 頁課文</span>
+            <h2 class="text-2xl font-black text-emerald-950 mt-1">📖 一、小船（點選句子或單字聽發音）</h2>
+          </div>
+          <button onclick="readFullLessonText()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-5 py-2.5 rounded-2xl shadow border-b-4 border-emerald-800 btn-3d flex items-center gap-2">
+            <span>🔊</span> 整篇課文朗讀
+          </button>
+        </div>
+
+        <!-- 課文四句卡片（方向字與本課生字特別高亮） -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="lessonTextCards">
+          <!-- 由 JS 渲染課文句子 -->
+        </div>
+      </div>
+
+      <!-- 本課「我會寫的字」與「我會認字」總覽（課本 P.20~P.21） -->
+      <div class="bg-white rounded-3xl p-6 shadow-lg border-4 border-amber-300">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <h3 class="text-xl font-black text-amber-950 flex items-center gap-2">
+            <span>✏️</span> 第一課生字百寶箱（課本 P.20 加油小站）
+          </h3>
+          <span class="text-xs font-bold text-amber-800 bg-amber-100 px-3 py-1 rounded-full">點選生字卡聽讀音與造詞</span>
+        </div>
+
+        <div id="lessonCharsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <!-- 由 JS 渲染生字田字格卡 -->
+        </div>
+      </div>
+
+      <!-- 課本 P.23：「……也……」合併句子小遊戲 -->
+      <div class="bg-white rounded-3xl p-6 shadow-lg border-4 border-rose-300">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div>
+            <span class="bg-rose-100 text-rose-800 text-xs font-black px-3 py-1 rounded-full border border-rose-300">課本第 23 頁：⑥ 合併句子</span>
+            <h3 class="text-xl font-black text-rose-950 mt-1">✨ 魔法連接詞「也」：把兩個句子合起來！</h3>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- 例句 1：旺旺 -->
+          <div onclick="speakText('旺旺喜歡打球，也喜歡游泳。')" class="cursor-pointer bg-rose-50 hover:bg-rose-100/80 transition p-4 rounded-2xl border-2 border-rose-200">
+            <div class="text-sm text-slate-600 font-bold mb-2">
+              🐶 原本兩句話：<br/>
+              1. 旺旺喜歡打球。<br/>
+              2. 旺旺喜歡游泳。
+            </div>
+            <div class="bg-white p-3 rounded-xl border-2 border-rose-300 kaiti text-2xl font-black text-slate-800">
+              旺旺喜歡打球，<span class="text-rose-600 text-3xl bg-yellow-100 px-1.5 rounded-lg border border-rose-400">也</span>喜歡游泳。🔊
+            </div>
+          </div>
+
+          <!-- 例句 2：風和珠珠 -->
+          <div onclick="speakText('風在唱歌，珠珠也在唱歌。')" class="cursor-pointer bg-rose-50 hover:bg-rose-100/80 transition p-4 rounded-2xl border-2 border-rose-200">
+            <div class="text-sm text-slate-600 font-bold mb-2">
+              🐷 原本兩句話：<br/>
+              1. 風在唱歌。<br/>
+              2. 珠珠在唱歌。
+            </div>
+            <div class="bg-white p-3 rounded-xl border-2 border-rose-300 kaiti text-2xl font-black text-slate-800">
+              風在唱歌，珠珠<span class="text-rose-600 text-3xl bg-yellow-100 px-1.5 rounded-lg border border-rose-400">也</span>在唱歌。🔊
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ==================== 語音合成器 (台灣國語優先) ====================
+    function speakText(text, rate = 0.88) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'zh-TW';
+      utter.rate = rate;
+      utter.pitch = 1.05;
+
+      const voices = window.speechSynthesis.getVoices();
+      const twVoice = voices.find(v => v.lang.includes('zh-TW') || v.name.includes('Taiwan') || v.name.includes('Meijia') || v.name.includes('Yating'));
+      if (twVoice) utter.voice = twVoice;
+
+      window.speechSynthesis.speak(utter);
+    }
+
+    // ==================== 狀態管理 ====================
+    let totalStars = parseInt(localStorage.getItem('dejun_lesson1_stars') || '0', 10);
+    let zhuyinVisible = true;
+
+    function updateStarDisplay(add = 0) {
+      if (add > 0) {
+        totalStars += add;
+        localStorage.setItem('dejun_lesson1_stars', totalStars.toString());
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 45, spread: 65, origin: { y: 0.7 } });
+        }
+      }
+      document.getElementById('scoreDisplay').textContent = totalStars;
+    }
+
+    function toggleZhuyin() {
+      zhuyinVisible = !zhuyinVisible;
+      document.body.classList.toggle('hide-zhuyin', !zhuyinVisible);
+      document.getElementById('zhuyinIcon').textContent = zhuyinVisible ? '👁️' : '🎯';
+      document.getElementById('zhuyinBtnText').textContent = zhuyinVisible ? '注音：顯示中' : '純國字挑戰模式';
+      speakText(zhuyinVisible ? '開啟注音輔助' : '切換成純國字模式，直接看國字形狀喔！');
+    }
+
+    function switchTab(tabId) {
+      const tabs = ['tab-direction', 'tab-boat', 'tab-bear', 'tab-text'];
+      tabs.forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== tabId);
+        const btn = document.getElementById('btn-' + id);
+        if (id === tabId) {
+          btn.className = 'tab-btn bg-sky-600 text-white font-black py-2.5 px-3 rounded-2xl shadow border-b-4 border-sky-800 flex items-center justify-center gap-1.5 text-sm sm:text-base transition';
+        } else {
+          btn.className = 'tab-btn bg-white hover:bg-sky-50 text-sky-800 font-bold py-2.5 px-3 rounded-2xl shadow-sm border-2 border-sky-200 flex items-center justify-center gap-1.5 text-sm sm:text-base transition';
+        }
+      });
+
+      if (tabId === 'tab-boat') {
+        renderPondGrid();
+        renderControlPad();
+      } else if (tabId === 'tab-bear') {
+        renderBearQuiz();
+      }
+    }
+
+    // ==================== 六大方向國字資料庫 ====================
+    const DIRECTION_DATA = [
+      {
+        pairTitle: '垂直方向：一上一下',
+        color: 'rose',
+        items: [
+          {
+            char: '上',
+            zhuyin: ['ㄕ', 'ㄤˋ'],
+            eng: 'UP / ABOVE',
+            words: '上面、水上、上學',
+            memoryTip: '橫線「一」的上面站著一豎，代表在「上面」！',
+            visualHtml: `
+              <div class="flex flex-col items-center">
+                <span class="text-2xl animate-bounce">🍎</span>
+                <div class="w-16 h-1.5 bg-slate-700 rounded-full"></div>
+              </div>
+            `
+          },
+          {
+            char: '下',
+            zhuyin: ['ㄒ', 'ㄧ', 'ㄚˋ'],
+            eng: 'DOWN / BELOW',
+            words: '下面、樹下、一下',
+            memoryTip: '橫線「一」的下面掛著一豎一點，代表在「下面」！',
+            visualHtml: `
+              <div class="flex flex-col items-center">
+                <div class="w-16 h-1.5 bg-slate-700 rounded-full"></div>
+                <span class="text-2xl animate-bounce mt-1">🍎</span>
+              </div>
+            `
+          }
+        ]
+      },
+      {
+        pairTitle: '水平方向：一左一右',
+        color: 'amber',
+        items: [
+          {
+            char: '左',
+            zhuyin: ['ㄗ', 'ㄨ', 'ㄛˇ'],
+            eng: 'LEFT',
+            words: '左邊、左手、一左一右',
+            memoryTip: '口訣：「左」邊下面是一個「工」（工作）！',
+            visualHtml: `
+              <div class="flex items-center gap-2">
+                <span class="text-2xl bg-amber-300 px-2 py-0.5 rounded-lg border-2 border-amber-600 font-black">✋左</span>
+                <span class="text-slate-400">|</span>
+                <span class="text-lg opacity-30">🤚</span>
+              </div>
+            `
+          },
+          {
+            char: '右',
+            zhuyin: ['ㄧ', 'ㄡˋ'],
+            eng: 'RIGHT',
+            words: '右邊、右手、一左一右',
+            memoryTip: '口訣：「右」邊下面是一個「口」（嘴巴吃飯）！',
+            visualHtml: `
+              <div class="flex items-center gap-2">
+                <span class="text-lg opacity-30">✋</span>
+                <span class="text-slate-400">|</span>
+                <span class="text-2xl bg-amber-300 px-2 py-0.5 rounded-lg border-2 border-amber-600 font-black">右🤚</span>
+              </div>
+            `
+          }
+        ]
+      },
+      {
+        pairTitle: '前進方向：一前一後',
+        color: 'sky',
+        items: [
+          {
+            char: '前',
+            zhuyin: ['ㄑ', 'ㄧ', 'ㄢˊ'],
+            eng: 'FRONT / FORWARD',
+            words: '前面、向前走、一前一後',
+            memoryTip: '眼睛看著的「前面」，小船向前走！',
+            visualHtml: `
+              <div class="flex items-center gap-1">
+                <span class="text-lg opacity-40">🚙</span>
+                <span class="text-xs font-bold text-sky-700">➡️</span>
+                <span class="text-2xl bg-sky-200 px-2 py-0.5 rounded-lg border-2 border-sky-600">🚕前</span>
+              </div>
+            `
+          },
+          {
+            char: '後',
+            zhuyin: ['ㄏ', 'ㄡˋ'],
+            eng: 'BACK / BEHIND',
+            words: '後面、後退、一前一後',
+            memoryTip: '跟在車子屁股的「後面」！',
+            visualHtml: `
+              <div class="flex items-center gap-1">
+                <span class="text-2xl bg-sky-200 px-2 py-0.5 rounded-lg border-2 border-sky-600">後🚙</span>
+                <span class="text-xs font-bold text-sky-700">➡️</span>
+                <span class="text-lg opacity-40">🚕</span>
+              </div>
+            `
+          }
+        ]
+      }
+    ];
+
+    function renderDirectionCards() {
+      const container = document.getElementById('directionPairsContainer');
+      container.innerHTML = DIRECTION_DATA.map(group => `
+        <div class="bg-white rounded-3xl p-4 shadow-md border-4 border-${group.color}-200 flex flex-col justify-between">
+          <div class="text-center font-black text-${group.color}-900 bg-${group.color}-100 py-1.5 px-3 rounded-2xl mb-3 text-base">
+            ${group.pairTitle}
+          </div>
+          <div class="space-y-3">
+            ${group.items.map(item => `
+              <div onclick="speakText('${item.char}。${item.words}。${item.memoryTip}')"
+                   class="cursor-pointer bg-${group.color}-50/60 hover:bg-${group.color}-100/70 transition rounded-2xl p-3.5 border-2 border-${group.color}-200 flex flex-col gap-2">
+                <div class="flex items-center justify-between gap-3">
+                  <!-- 田字格大字 + 注音 -->
+                  <div class="flex items-center gap-2">
+                    <div class="tian-zi-ge w-20 h-20 flex items-center justify-center shrink-0">
+                      <span class="kaiti text-6xl font-black text-slate-900 select-none">${item.char}</span>
+                    </div>
+                    <div class="zhuyin-box zhuyin-col text-base bg-white px-2 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                      ${item.zhuyin.map(z => `<span>${z}</span>`).join('')}
+                    </div>
+                  </div>
+                  <!-- 空間圖解 -->
+                  <div class="flex flex-col items-end">
+                    <span class="text-xs font-black text-slate-400 tracking-wider mb-1">${item.eng}</span>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-inner">
+                      ${item.visualHtml}
+                    </div>
+                  </div>
+                </div>
+                <div class="text-xs sm:text-sm font-bold text-slate-700 bg-white/90 px-3 py-1.5 rounded-xl border border-slate-200">
+                  💡 <span class="text-${group.color}-800">${item.memoryTip}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-500 px-1">
+                  <span>語詞：${item.words}</span>
+                  <span class="text-${group.color}-700 font-bold">🔊 點擊發音</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ==================== 隨堂閃電快選（不看箭頭認國字） ====================
+    const ALL_SIX_DIRS = [
+      { char: '上', zhuyin: 'ㄕㄤˋ', hint: '樹上的「上」、水上的「上」' },
+      { char: '下', zhuyin: 'ㄒㄧㄚˋ', hint: '樹下的「下」、一下的「下」' },
+      { char: '左', zhuyin: 'ㄗㄨㄛˇ', hint: '左邊的「左」（下面有個工）' },
+      { char: '右', zhuyin: 'ㄧㄡˋ', hint: '右邊的「右」（下面有個口）' },
+      { char: '前', zhuyin: 'ㄑㄧㄢˊ', hint: '向前走的「前」、前面的「前」' },
+      { char: '後', zhuyin: 'ㄏㄡˋ', hint: '後面的「後」、一前一後的「後」' }
+    ];
+    let currentFlashTarget = null;
+
+    function renderFlashChoices(shuffled = false) {
+      const list = shuffled ? [...ALL_SIX_DIRS].sort(() => Math.random() - 0.5) : ALL_SIX_DIRS;
+      const grid = document.getElementById('flashChoicesGrid');
+      grid.innerHTML = list.map(d => `
+        <button onclick="checkFlashAnswer('${d.char}')"
+                class="bg-amber-50 hover:bg-amber-100 active:scale-95 transition border-3 border-amber-300 rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm group">
+          <span class="kaiti text-5xl sm:text-6xl font-black text-slate-900 group-hover:text-amber-700">${d.char}</span>
+          <span class="zhuyin-box text-xs font-bold text-slate-500 mt-1">${d.zhuyin}</span>
+        </button>
+      `).join('');
+    }
+
+    function startFlashQuiz() {
+      currentFlashTarget = ALL_SIX_DIRS[Math.floor(Math.random() * ALL_SIX_DIRS.length)];
+      renderFlashChoices(true); // 每次出題自動洗牌位置，確保他是認國字而不是背位置
+      document.getElementById('flashPromptText').innerHTML = `👂 請聽題目：找出「<span class="text-rose-600 font-black">${currentFlashTarget.hint}</span>」是哪一個國字？`;
+      speakText(`請找出：${currentFlashTarget.hint}，是哪一個字？`);
+    }
+
+    function repeatFlashQuestion() {
+      if (!currentFlashTarget) {
+        startFlashQuiz();
+        return;
+      }
+      speakText(`請找出：${currentFlashTarget.hint}`);
+    }
+
+    function checkFlashAnswer(pickedChar) {
+      if (!currentFlashTarget) {
+        speakText(pickedChar);
+        return;
+      }
+      if (pickedChar === currentFlashTarget.char) {
+        updateStarDisplay(1);
+        document.getElementById('flashPromptText').innerHTML = `🎉 太棒了！你認得「<span class="kaiti text-2xl text-emerald-700 font-black">${pickedChar}</span>」這個國字！`;
+        speakText(`答對了！就是${pickedChar}！你真厲害！`);
+        setTimeout(() => startFlashQuiz(), 1800);
+      } else {
+        speakText(`這是「${pickedChar}」，再找找看「${currentFlashTarget.char}」在哪裡喔！`);
+      }
+    }
+
+    // ==================== TAB 2: 開小船尋寶遊戲 ====================
+    const GRID_SIZE = 5;
+    let boatPos = { r: 2, c: 2 };
+    let fishPos = { r: 0, c: 2 };
+    let lotusPos = [{ r: 1, c: 1 }, { r: 3, c: 3 }];
+    let fishCollected = 0;
+    let boatMode = 'treasure'; // 'treasure' | 'command'
+    let targetCommandDir = null;
+    let padRandomized = false;
+
+    const PAD_BUTTONS = [
+      { char: '上', zhuyin: 'ㄕㄤˋ', dr: -1, dc: 0, phrase: '小船向上走' },
+      { char: '下', zhuyin: 'ㄒㄧㄚˋ', dr: 1, dc: 0, phrase: '小船向下走' },
+      { char: '左', zhuyin: 'ㄗㄨㄛˇ', dr: 0, dc: -1, phrase: '小船向左走' },
+      { char: '右', zhuyin: 'ㄧㄡˋ', dr: 0, dc: 1, phrase: '小船向右走' },
+      { char: '前', zhuyin: 'ㄑㄧㄢˊ', dr: -1, dc: 0, phrase: '小船向前走' },
+      { char: '後', zhuyin: 'ㄏㄡˋ', dr: 1, dc: 0, phrase: '小船向後退' }
+    ];
+
+    function spawnNewFish() {
+      let nr, nc;
+      do {
+        nr = Math.floor(Math.random() * GRID_SIZE);
+        nc = Math.floor(Math.random() * GRID_SIZE);
+      } while ((nr === boatPos.r && nc === boatPos.c));
+      fishPos = { r: nr, c: nc };
+    }
+
+    function renderPondGrid() {
+      const grid = document.getElementById('pondGrid');
+      let html = '';
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const isBoat = (r === boatPos.r && c === boatPos.c);
+          const isFish = (r === fishPos.r && c === fishPos.c);
+          const isLotus = lotusPos.some(l => l.r === r && l.c === c);
+
+          let cellContent = '';
+          if (isBoat) {
+            cellContent = `
+              <div class="boat-anim flex flex-col items-center justify-center">
+                <span class="text-3xl sm:text-4xl drop-shadow">⛵</span>
+                <span class="kaiti text-xs font-black bg-white/90 text-sky-900 px-1.5 rounded-full shadow">小船</span>
+              </div>
+            `;
+          } else if (isFish && boatMode === 'treasure') {
+            cellContent = `
+              <div class="fish-anim flex flex-col items-center justify-center">
+                <span class="text-2xl sm:text-3xl">🐟</span>
+                <span class="kaiti text-xs font-bold text-rose-900 bg-rose-100/90 px-1 rounded">小魚</span>
+              </div>
+            `;
+          } else if (isLotus) {
+            cellContent = `<span class="text-xl opacity-75">🪷</span>`;
+          }
+
+          html += `
+            <div class="rounded-xl flex items-center justify-center transition-all duration-200 ${
+              isBoat ? 'bg-amber-200/90 border-2 border-amber-500 shadow-md scale-105' : 'bg-white/60 hover:bg-white/80 border border-sky-300/60'
+            }">
+              ${cellContent}
+            </div>
+          `;
+        }
+      }
+      grid.innerHTML = html;
+    }
+
+    function renderControlPad() {
+      const container = document.getElementById('controlPadContainer');
+      if (!padRandomized) {
+        // 空間對應排版（讓孩子建立方位與國字的連結，但完全不畫箭頭）
+        container.innerHTML = `
+          <div class="grid grid-cols-3 gap-2.5 items-center justify-items-center">
+            <div></div>
+            <div class="flex gap-1.5">
+              ${createPadBtnHtml(PAD_BUTTONS[0], 'bg-rose-500 hover:bg-rose-600 border-rose-700')}
+              ${createPadBtnHtml(PAD_BUTTONS[4], 'bg-sky-600 hover:bg-sky-700 border-sky-800')}
+            </div>
+            <div></div>
+
+            ${createPadBtnHtml(PAD_BUTTONS[2], 'bg-amber-500 hover:bg-amber-600 border-amber-700')}
+            <div class="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-amber-300 flex flex-col items-center justify-center text-xs font-black text-amber-900">
+              <span>⛵</span>
+              <span class="kaiti text-base">位置</span>
+            </div>
+            ${createPadBtnHtml(PAD_BUTTONS[3], 'bg-purple-500 hover:bg-purple-600 border-purple-700')}
+
+            <div></div>
+            <div class="flex gap-1.5">
+              ${createPadBtnHtml(PAD_BUTTONS[1], 'bg-emerald-600 hover:bg-emerald-700 border-emerald-800')}
+              ${createPadBtnHtml(PAD_BUTTONS[5], 'bg-teal-600 hover:bg-teal-700 border-teal-800')}
+            </div>
+            <div></div>
+          </div>
+        `;
+      } else {
+        // 隨機洗牌兩列排版（測試純認字能力，防止背按鈕位置）
+        const shuffled = [...PAD_BUTTONS].sort(() => Math.random() - 0.5);
+        container.innerHTML = `
+          <div class="grid grid-cols-3 gap-3">
+            ${shuffled.map(btn => createPadBtnHtml(btn, 'bg-indigo-600 hover:bg-indigo-700 border-indigo-800')).join('')}
+          </div>
+        `;
+      }
+    }
+
+    function createPadBtnHtml(btn, colorClasses) {
+      return `
+        <button onclick="handleBoatMove('${btn.char}')"
+                class="${colorClasses} text-white w-20 h-20 rounded-2xl shadow-md border-b-4 btn-3d flex flex-col items-center justify-center">
+          <span class="kaiti text-4xl font-black leading-none">${btn.char}</span>
+          <span class="zhuyin-box text-xs font-bold opacity-90 mt-1">${btn.zhuyin}</span>
+        </button>
+      `;
+    }
+
+    function shufflePadLayout() {
+      padRandomized = !padRandomized;
+      renderControlPad();
+      speakText(padRandomized ? '按鈕位置已經打亂囉！仔細看國字再開船！' : '恢復原本的方向排列！');
+    }
+
+    function setBoatMode(mode) {
+      boatMode = mode;
+      const tBtn = document.getElementById('boatModeTreasureBtn');
+      const cBtn = document.getElementById('boatModeCommandBtn');
+
+      if (mode === 'treasure') {
+        tBtn.className = 'bg-sky-600 text-white font-black px-4 py-2 rounded-2xl shadow border-b-4 border-sky-800 text-sm';
+        cBtn.className = 'bg-amber-100 text-amber-900 font-black px-4 py-2 rounded-2xl border-2 border-amber-400 text-sm';
+        document.getElementById('boatMissionEmoji').textContent = '🐟';
+        document.getElementById('boatMissionTitle').textContent = '請點選「上、下、左、右、前、後」國字按鈕，開小船去找小魚！';
+        speakText('自由找小魚模式！請點選方向國字，開小船去找小魚加加油！');
+        renderPondGrid();
+      } else {
+        cBtn.className = 'bg-amber-500 text-white font-black px-4 py-2 rounded-2xl shadow border-b-4 border-amber-700 text-sm';
+        tBtn.className = 'bg-sky-100 text-sky-900 font-black px-4 py-2 rounded-2xl border-2 border-sky-300 text-sm';
+        nextBoatCommand();
+        renderPondGrid();
+      }
+    }
+
+    function nextBoatCommand() {
+      // 挑選不會撞牆的合法方向指令
+      const validBtns = PAD_BUTTONS.filter(b => {
+        const nr = boatPos.r + b.dr;
+        const nc = boatPos.c + b.dc;
+        return nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE;
+      });
+      targetCommandDir = validBtns[Math.floor(Math.random() * validBtns.length)];
+      document.getElementById('boatMissionEmoji').textContent = '📢';
+      document.getElementById('boatMissionTitle').innerHTML = `船長指令：請點選國字讓小船「<span class="text-rose-600 font-black">${targetCommandDir.phrase}</span>」！`;
+      speakText(`船長指令：請讓${targetCommandDir.phrase}！找出「${targetCommandDir.char}」這個字！`);
+    }
+
+    function speakCurrentBoatMission() {
+      if (boatMode === 'command' && targetCommandDir) {
+        speakText(`請找出「${targetCommandDir.char}」，讓${targetCommandDir.phrase}！`);
+      } else {
+        speakText('請點選上、下、左、右、前、後的國字按鈕，開小船去找小魚！');
+      }
+    }
+
+    function handleBoatMove(charClicked) {
+      const btnObj = PAD_BUTTONS.find(b => b.char === charClicked);
+      if (!btnObj) return;
+
+      // 若在船長指令模式，先檢查是否按對指令字
+      if (boatMode === 'command' && targetCommandDir) {
+        if (charClicked !== targetCommandDir.char) {
+          speakText(`你點的是「${charClicked}」，船長請你點「${targetCommandDir.char}」喔！`);
+          return;
+        }
+      }
+
+      const nr = boatPos.r + btnObj.dr;
+      const nc = boatPos.c + btnObj.dc;
+
+      if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) {
+        document.getElementById('boatActionLog').innerHTML = `⚠️ 已經到池塘邊邊囉！換別的方向試試看！`;
+        speakText(`${charClicked}！已經到池塘岸邊囉，換別的方向走吧！`);
+        return;
+      }
+
+      boatPos = { r: nr, c: nc };
+      document.getElementById('boatActionLog').innerHTML = `⛵ <span class="kaiti text-xl text-sky-800 font-black">${btnObj.phrase}</span>（你點了「<span class="kaiti text-xl text-rose-600 font-black">${charClicked}</span>」）`;
+
+      // 若已經開啟隨機打亂模式，每次移動後重新洗牌位置
+      if (padRandomized) renderControlPad();
+      renderPondGrid();
+
+      if (boatMode === 'command') {
+        updateStarDisplay(1);
+        speakText(`太棒了！${btnObj.phrase}！`);
+        setTimeout(() => nextBoatCommand(), 1400);
+      } else {
+        // 自由找小魚模式：檢查有沒有碰到小魚
+        if (boatPos.r === fishPos.r && boatPos.c === fishPos.c) {
+          fishCollected++;
+          document.getElementById('fishCountText').textContent = fishCollected;
+          updateStarDisplay(1);
+          speakText(`${charClicked}！小魚也來加加油！你找到小魚了！`);
+          spawnNewFish();
+          setTimeout(() => renderPondGrid(), 450);
+        } else {
+          speakText(`${charClicked}！${btnObj.phrase}`);
+        }
+      }
+    }
+
+    // ==================== TAB 3: 魔法熊看圖找位置（對應課本 P.22） ====================
+    const BEAR_QUESTIONS = [
+      {
+        stageType: 'bear',
+        highlight: 'plane',
+        questionHtml: '看圖想一想：紙飛機 🛩️ 在魔法熊的哪一個位置？',
+        voiceText: '看圖想一想，紙飛機在魔法熊的哪一個位置？請選出正確的國字。',
+        answer: '上'
+      },
+      {
+        stageType: 'bear',
+        highlight: 'pinwheel',
+        questionHtml: '看圖想一想：風車 Pinwheel 🌀 在魔法熊的哪一邊？',
+        voiceText: '看圖想一想，風車在魔法熊的哪一邊？',
+        answer: '左'
+      },
+      {
+        stageType: 'bear',
+        highlight: 'flower',
+        questionHtml: '看圖想一想：小黃花 🌼 在魔法熊的哪一邊？',
+        voiceText: '看圖想一想，小黃花在魔法熊的哪一邊？',
+        answer: '右'
+      },
+      {
+        stageType: 'bear',
+        highlight: 'grass',
+        questionHtml: '看圖想一想：小草地 🌱 在魔法熊腳邊的哪一個位置？',
+        voiceText: '小草地在魔法熊腳邊的哪一個位置？',
+        answer: '下'
+      },
+      {
+        stageType: 'cars',
+        highlight: 'yellowCar',
+        questionHtml: '看馬路上（一前一後）：黃色車子 🚕 開在藍色車子的哪一個位置？',
+        voiceText: '看馬路上，黃色車子開在藍色車子的哪一個位置？是前還是後？',
+        answer: '前'
+      },
+      {
+        stageType: 'cars',
+        highlight: 'blueCar',
+        questionHtml: '看馬路上（一前一後）：藍色車子 🚙 跟在黃色車子的哪一個位置？',
+        voiceText: '藍色車子跟在黃色車子的哪一個位置？',
+        answer: '後'
+      }
+    ];
+    let currentBearIdx = 0;
+
+    function renderBearQuiz() {
+      const q = BEAR_QUESTIONS[currentBearIdx];
+      document.getElementById('bearQIndex').textContent = currentBearIdx + 1;
+      document.getElementById('bearQTotal').textContent = BEAR_QUESTIONS.length;
+      document.getElementById('bearQuestionTitle').innerHTML = q.questionHtml;
+
+      const stage = document.getElementById('bearStageBox');
+      if (q.stageType === 'bear') {
+        stage.innerHTML = `
+          <div class="flex flex-col items-center justify-center space-y-4 py-2">
+            <!-- 上：紙飛機 -->
+            <div class="px-5 py-2 rounded-2xl border-2 transition ${q.highlight === 'plane' ? 'bg-yellow-200 border-amber-500 scale-110 shadow-md animate-bounce' : 'bg-white/80 border-sky-200'}">
+              <span class="text-4xl">🛩️</span>
+              <span class="text-xs font-bold text-slate-600 block text-center">紙飛機</span>
+            </div>
+
+            <!-- 左：風車 + 中：魔法熊 + 右：小花 -->
+            <div class="flex items-center justify-center gap-6 sm:gap-14 w-full">
+              <div class="px-4 py-3 rounded-2xl border-2 transition flex flex-col items-center ${q.highlight === 'pinwheel' ? 'bg-yellow-200 border-amber-500 scale-110 shadow-md animate-pulse' : 'bg-white/80 border-sky-200'}">
+                <span class="text-4xl">🎡</span>
+                <span class="text-xs font-bold text-slate-600 mt-1">風車</span>
+              </div>
+
+              <div class="flex flex-col items-center bg-indigo-100 px-6 py-4 rounded-3xl border-4 border-indigo-300 shadow">
+                <span class="text-6xl">🐻</span>
+                <span class="text-xs font-black text-indigo-900 mt-1">魔法熊（中心）</span>
+              </div>
+
+              <div class="px-4 py-3 rounded-2xl border-2 transition flex flex-col items-center ${q.highlight === 'flower' ? 'bg-yellow-200 border-amber-500 scale-110 shadow-md animate-pulse' : 'bg-white/80 border-sky-200'}">
+                <span class="text-4xl">🌼</span>
+                <span class="text-xs font-bold text-slate-600 mt-1">小黃花</span>
+              </div>
+            </div>
+
+            <!-- 下：草地與小鳥 -->
+            <div class="px-5 py-2 rounded-2xl border-2 transition ${q.highlight === 'grass' ? 'bg-yellow-200 border-amber-500 scale-110 shadow-md animate-bounce' : 'bg-emerald-100/80 border-emerald-300'}">
+              <span class="text-3xl">🌱🐦🌱</span>
+              <span class="text-xs font-bold text-emerald-900 block text-center">草地</span>
+            </div>
+          </div>
+        `;
+      } else {
+        stage.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-6">
+            <div class="text-xs font-bold text-slate-500 mb-3">➡️ 車子前進方向 ➡️</div>
+            <div class="w-full max-w-md bg-slate-700 rounded-3xl p-6 border-4 border-slate-500 flex items-center justify-around relative">
+              <div class="px-4 py-3 rounded-2xl border-4 transition flex flex-col items-center ${q.highlight === 'blueCar' ? 'bg-yellow-200 border-amber-400 scale-110 shadow-lg' : 'bg-sky-100 border-sky-300'}">
+                <span class="text-5xl">🚙</span>
+                <span class="text-xs font-black text-slate-800 mt-1">藍色車子</span>
+              </div>
+
+              <div class="text-white font-black text-3xl">➡️ ➡️</div>
+
+              <div class="px-4 py-3 rounded-2xl border-4 transition flex flex-col items-center ${q.highlight === 'yellowCar' ? 'bg-yellow-200 border-amber-400 scale-110 shadow-lg' : 'bg-amber-100 border-amber-300'}">
+                <span class="text-5xl">🚕</span>
+                <span class="text-xs font-black text-slate-800 mt-1">黃色車子</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 渲染六個方向國字選項
+      const ansContainer = document.getElementById('bearAnswerButtons');
+      ansContainer.innerHTML = ALL_SIX_DIRS.map(d => `
+        <button onclick="checkBearAnswer('${d.char}')"
+                class="bg-purple-50 hover:bg-purple-100 active:scale-95 transition border-3 border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm">
+          <span class="kaiti text-5xl font-black text-slate-900">${d.char}</span>
+          <span class="zhuyin-box text-xs font-bold text-purple-700 mt-1">${d.zhuyin}</span>
+        </button>
+      `).join('');
+    }
+
+    function speakBearQuestion() {
+      const q = BEAR_QUESTIONS[currentBearIdx];
+      speakText(q.voiceText);
+    }
+
+    function checkBearAnswer(picked) {
+      const q = BEAR_QUESTIONS[currentBearIdx];
+      if (picked === q.answer) {
+        updateStarDisplay(1);
+        speakText(`答對了！是「${picked}」！你真棒！`);
+        setTimeout(() => {
+          currentBearIdx = (currentBearIdx + 1) % BEAR_QUESTIONS.length;
+          renderBearQuiz();
+          speakBearQuestion();
+        }, 1400);
+      } else {
+        speakText(`這是「${picked}」，再看一看圖，選出正確的方向喔！`);
+      }
+    }
+
+    // ==================== TAB 4: 第一課課文與生字資料 ====================
+    const LESSON_SENTENCES = [
+      {
+        num: 1,
+        text: '小船水上走，',
+        voice: '小船水上走，',
+        emoji: '⛵🌊',
+        highlightChars: ['上']
+      },
+      {
+        num: 2,
+        text: '一左一右向前走。',
+        voice: '一左一右向前走。',
+        emoji: '🧭➡️',
+        highlightChars: ['左', '右', '前']
+      },
+      {
+        num: 3,
+        text: '小船水上走，一二一，一二一，',
+        voice: '小船水上走，一二一，一二一，',
+        emoji: '1️⃣2️⃣1️⃣',
+        highlightChars: ['上']
+      },
+      {
+        num: 4,
+        text: '小魚也來加加油！',
+        voice: '小魚也來加加油！',
+        emoji: '🐟👏',
+        highlightChars: ['也']
+      }
+    ];
+
+    const LESSON1_CHARS = [
+      { char: '小', zhuyin: ['ㄒ','ㄧ','ㄠˇ'], strokes: 3, word: '小船、小魚', type: '我會寫' },
+      { char: '上', zhuyin: ['ㄕ','ㄤˋ'], strokes: 3, word: '水上、上面', type: '方向主角' },
+      { char: '走', zhuyin: ['ㄗ','ㄡˇ'], strokes: 7, word: '走路、向前走', type: '我會寫' },
+      { char: '左', zhuyin: ['ㄗ','ㄨ','ㄛˇ'], strokes: 5, word: '左邊、一左一右', type: '方向主角' },
+      { char: '右', zhuyin: ['ㄧ','ㄡˋ'], strokes: 5, word: '右邊、一左一右', type: '方向主角' },
+      { char: '向', zhuyin: ['ㄒ','ㄧ','ㄤˋ'], strokes: 6, word: '方向、向前走', type: '我會寫' },
+      { char: '魚', zhuyin: ['ㄩˊ'], strokes: 11, word: '小魚、金魚', type: '象形認字' },
+      { char: '也', zhuyin: ['ㄧ','ㄝˇ'], strokes: 3, word: '也來、也是', type: '我會寫' },
+      { char: '來', zhuyin: ['ㄌ','ㄞˊ'], strokes: 8, word: '也來、過來', type: '我會寫' },
+      { char: '加', zhuyin: ['ㄐ','ㄧ','ㄚ'], strokes: 5, word: '加油、加法', type: '我會寫' },
+      { char: '前', zhuyin: ['ㄑ','ㄧ','ㄢˊ'], strokes: 9, word: '前面、向前走', type: '方向主角' },
+      { char: '後', zhuyin: ['ㄏ','ㄡˋ'], strokes: 9, word: '後面、一前一後', type: '方向主角' },
+      { char: '下', zhuyin: ['ㄒ','ㄧ','ㄚˋ'], strokes: 3, word: '下面、一上一下', type: '方向主角' },
+      { char: '船', zhuyin: ['ㄔ','ㄨ','ㄢˊ'], strokes: 11, word: '小船、開船', type: '我會認' },
+      { char: '口', zhuyin: ['ㄎ','ㄡˇ'], strokes: 3, word: '人口、一口', type: '象形認字' }
+    ];
+
+    function renderLessonTextAndChars() {
+      const textGrid = document.getElementById('lessonTextCards');
+      textGrid.innerHTML = LESSON_SENTENCES.map(s => {
+        const formattedText = s.text.split('').map(ch => {
+          const isDir = ['上', '下', '左', '右', '前', '後'].includes(ch);
+          return `<span onclick="event.stopPropagation(); speakText('${ch}')" class="inline-block px-0.5 rounded hover:bg-amber-200 transition ${isDir ? 'text-rose-600 underline decoration-wavy decoration-rose-400' : ''}">${ch}</span>`;
+        }).join('');
+
+        return `
+          <div onclick="speakText('${s.voice}')"
+               class="cursor-pointer bg-emerald-50/70 hover:bg-emerald-100/80 transition p-4 rounded-2xl border-2 border-emerald-200 flex items-center justify-between gap-3">
+            <div>
+              <span class="text-xs font-bold text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200">第 ${s.num} 句（點單字可單獨發音）</span>
+              <div class="kaiti text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-wider">
+                ${formattedText}
+              </div>
+            </div>
+            <div class="text-3xl shrink-0">${s.emoji}</div>
+          </div>
+        `;
+      }).join('');
+
+      const charsGrid = document.getElementById('lessonCharsGrid');
+      charsGrid.innerHTML = LESSON1_CHARS.map(c => {
+        const isDir = c.type === '方向主角';
+        return `
+          <div onclick="speakText('${c.char}，${c.word}')"
+               class="cursor-pointer rounded-2xl p-3 border-2 transition hover:-translate-y-1 shadow-sm flex flex-col items-center ${
+                 isDir ? 'bg-rose-50 border-rose-300' : 'bg-amber-50/50 border-amber-200'
+               }">
+            <span class="text-[11px] font-black px-2 py-0.5 rounded-full mb-2 ${
+              isDir ? 'bg-rose-500 text-white' : 'bg-amber-200 text-amber-900'
+            }">${c.type}</span>
+            <div class="flex items-center gap-2">
+              <div class="tian-zi-ge w-16 h-16 flex items-center justify-center">
+                <span class="kaiti text-5xl font-black text-slate-900">${c.char}</span>
+              </div>
+              <div class="zhuyin-box zhuyin-col text-xs font-bold text-slate-600">
+                ${c.zhuyin.map(z => `<span>${z}</span>`).join('')}
+              </div>
+            </div>
+            <div class="text-xs font-bold text-slate-700 mt-2 text-center">${c.word}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function readFullLessonText() {
+      speakText('第一課，小船。小船水上走，一左一右向前走。小船水上走，一二一，一二一，小魚也來加加油！', 0.85);
+    }
+
+    // ==================== 初始化 ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      updateStarDisplay(0);
+      renderDirectionCards();
+      renderFlashChoices(false);
+      renderPondGrid();
+      renderControlPad();
+      renderBearQuiz();
+      renderLessonTextAndChars();
+    });
+  </script>
+</body>
+</html>
