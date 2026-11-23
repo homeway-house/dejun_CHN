@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>第二課：印手印 — 國字偵探與魔法數量工廠</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap');
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(180deg, #FFF7ED 0%, #FFEDD5 50%, #FEF3C7 100%);
+      min-height: 100vh;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    /* 標準楷體國字 */
+    .kaiti {
+      font-family: 'DFKai-SB', 'BiauKai', '標楷體', 'Kaiti TC', 'KaiTi', serif;
+    }
+
+    /* 田字格設計 */
+    .tian-zi-ge {
+      position: relative;
+      background-color: #FFFDF9;
+      border: 3px solid #F97316;
+      border-radius: 14px;
+      box-shadow: inset 0 0 6px rgba(249, 115, 22, 0.15);
+    }
+    .tian-zi-ge::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      border-top: 1.5px dashed #FDBA74;
+      pointer-events: none;
+    }
+    .tian-zi-ge::after {
+      content: '';
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      border-left: 1.5px dashed #FDBA74;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    /* 直式注音排版 */
+    .zhuyin-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.05;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    /* 按鈕立體按壓感 */
+    .btn-3d {
+      transition: all 0.12s ease;
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+    }
+
+    /* 手印蓋章彈出動畫 */
+    @keyframes stampPop {
+      0% { transform: scale(1.6) rotate(-10deg); opacity: 0.4; }
+      70% { transform: scale(0.95) rotate(3deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .stamp-anim {
+      animation: stampPop 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* 隱藏注音模式 */
+    body.hide-zhuyin .zhuyin-box {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="pb-16 text-slate-800">
+
+  <!-- 頂部導覽列 -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-md border-b-4 border-orange-300 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="bg-orange-100 hover:bg-orange-200 text-orange-900 font-bold px-3.5 py-2 rounded-2xl border-2 border-orange-300 flex items-center gap-1.5 transition">
+          <span>🏠</span>
+          <span class="hidden sm:inline">回首頁目錄</span>
+        </a>
+        <div>
+          <span class="text-xs font-extrabold bg-orange-500 text-white px-2.5 py-0.5 rounded-full">第壹單元 • 第二課</span>
+          <h1 class="text-xl sm:text-2xl font-black text-orange-950 flex items-center gap-2 mt-0.5">
+            🖐️ 二、印手印（字形偵探與數量魔法）
+          </h1>
+        </div>
+      </div>
+
+      <!-- 工具區：純國字/注音切換 + 星星積分 -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button id="toggleZhuyinBtn" onclick="toggleZhuyin()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-2 rounded-2xl border-2 border-amber-300 text-sm flex items-center gap-1.5 shadow-sm transition">
+          <span id="zhuyinIcon">👁️</span>
+          <span id="zhuyinBtnText">注音：顯示中</span>
+        </button>
+
+        <div class="bg-yellow-50 border-2 border-yellow-400 px-3.5 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-sm">
+          <span class="text-2xl">⭐</span>
+          <span id="scoreDisplay" class="text-xl font-black text-amber-600">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 四大遊戲分頁 -->
+    <div class="max-w-5xl mx-auto mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <button onclick="switchTab('tab-detective')" id="btn-tab-detective" class="tab-btn bg-orange-600 text-white font-black py-2.5 px-3 rounded-2xl shadow border-b-4 border-orange-800 flex items-center justify-center gap-1.5 text-sm sm:text-base transition">
+        <span>🔍</span> 1. 左在右三兄弟
+      </button>
+      <button onclick="switchTab('tab-quantity')" id="btn-tab-quantity" class="tab-btn bg-white hover:bg-orange-50 text-orange-900 font-bold py-2.5 px-3 rounded-2xl shadow-sm border-2 border-orange-200 flex items-center justify-center gap-1.5 text-sm sm:text-base transition">
+        <span>🌸</span> 2. 疊字數量魔法
+      </button>
+      <button onclick="switchTab('tab-handprint')" id="btn-tab-handprint" class="tab-btn bg-white hover:bg-orange-50 text-orange-900 font-bold py-2.5 px-3 rounded-2xl shadow-sm border-2 border-orange-200 flex items-center justify-center gap-1.5 text-sm sm:text-base transition">
+        <span>🎨</span> 3. 魔法手印畫布
+      </button>
+      <button onclick="switchTab('tab-text')" id="btn-tab-text" class="tab-btn bg-white hover:bg-orange-50 text-orange-900 font-bold py-2.5 px-3 rounded-2xl shadow-sm border-2 border-orange-200 flex items-center justify-center gap-1.5 text-sm sm:text-base transition">
+        <span>📖</span> 4. 課文與生字
+      </button>
+    </div>
+  </header>
+
+  <!-- 主內容容器 -->
+  <main class="max-w-5xl mx-auto px-4 pt-6">
+
+    <!-- ==================== TAB 1: 相似字偵探（左、在、右比一比，課本 P.27） ==================== -->
+    <section id="tab-detective" class="space-y-6">
+      <div class="bg-white rounded-3xl p-5 shadow-lg border-4 border-orange-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="text-5xl bg-orange-100 p-3 rounded-2xl border-2 border-orange-300">🔍</div>
+          <div>
+            <span class="text-xs font-black bg-orange-100 text-orange-800 px-2.5 py-0.5 rounded-full border border-orange-300">對應課本第 27 頁：③ 比一比相似的字</span>
+            <h2 class="text-xl sm:text-2xl font-black text-orange-950 mt-1">超級雙胞胎：「左、在、右」哪裡不一樣？</h2>
+            <p class="text-slate-600 text-sm sm:text-base mt-0.5">
+              這三個字長得好像！秘密藏在它們的**「裡面零件」**，點一點卡片看看密碼口訣！
+            </p>
+          </div>
+        </div>
+        <button onclick="speakText('比一比相似的字：左、在、右。左下面是工，在裡面有土，右下面是口！')" class="shrink-0 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black px-4 py-2.5 rounded-2xl shadow border-b-4 border-amber-600 btn-3d flex items-center gap-2">
+          <span>🔊</span> 聽口訣
+        </button>
+      </div>
+
+      <!-- 三兄弟拆解卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- 左 -->
+        <div onclick="speakText('左，左手的左。屋頂下面住著一個工作的工！')" class="cursor-pointer bg-white hover:bg-amber-50/80 transition rounded-3xl p-5 shadow-md border-4 border-amber-300 flex flex-col items-center text-center group">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="tian-zi-ge w-24 h-24 flex items-center justify-center">
+              <span class="kaiti text-7xl font-black text-slate-900 group-hover:scale-105 transition">左</span>
+            </div>
+            <div class="zhuyin-box zhuyin-col text-lg bg-amber-50 px-2.5 py-2 rounded-xl border border-amber-200">
+              <span>ㄗ</span><span>ㄨ</span><span>ㄛˇ</span>
+            </div>
+          </div>
+          <div class="bg-amber-100 text-amber-950 font-black px-4 py-1.5 rounded-xl border-2 border-amber-300 mb-2">
+            🔑 秘密零件：<span class="kaiti text-2xl text-rose-600">工</span>（工作）
+          </div>
+          <p class="text-sm font-bold text-slate-600">語詞：左手、左邊、一左一右 🔊</p>
+        </div>
+
+        <!-- 在（本課新主角） -->
+        <div onclick="speakText('在，現在的在、在地上的在。左邊多了一直豎，裡面住著泥土的土！')" class="cursor-pointer bg-white hover:bg-rose-50/80 transition rounded-3xl p-5 shadow-md border-4 border-rose-400 flex flex-col items-center text-center group relative">
+          <span class="absolute -top-3 bg-rose-500 text-white text-xs font-black px-3 py-1 rounded-full shadow">✨ 本課新字</span>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="tian-zi-ge w-24 h-24 flex items-center justify-center">
+              <span class="kaiti text-7xl font-black text-rose-700 group-hover:scale-105 transition">在</span>
+            </div>
+            <div class="zhuyin-box zhuyin-col text-lg bg-rose-50 px-2.5 py-2 rounded-xl border border-rose-200">
+              <span>ㄗ</span><span>ㄞˋ</span>
+            </div>
+          </div>
+          <div class="bg-rose-100 text-rose-950 font-black px-4 py-1.5 rounded-xl border-2 border-rose-300 mb-2">
+            🔑 秘密零件：<span class="kaiti text-2xl text-rose-600">丨 ＋ 土</span>（泥土）
+          </div>
+          <p class="text-sm font-bold text-slate-600">語詞：現在、在地上、在家 🔊</p>
+        </div>
+
+        <!-- 右 -->
+        <div onclick="speakText('右，右腳的右。屋頂下面住著一個嘴巴的口！')" class="cursor-pointer bg-white hover:bg-purple-50/80 transition rounded-3xl p-5 shadow-md border-4 border-purple-300 flex flex-col items-center text-center group">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="tian-zi-ge w-24 h-24 flex items-center justify-center">
+              <span class="kaiti text-7xl font-black text-slate-900 group-hover:scale-105 transition">右</span>
+            </div>
+            <div class="zhuyin-box zhuyin-col text-lg bg-purple-50 px-2.5 py-2 rounded-xl border border-purple-200">
+              <span>ㄧ</span><span>ㄡˋ</span>
+            </div>
+          </div>
+          <div class="bg-purple-100 text-purple-950 font-black px-4 py-1.5 rounded-xl border-2 border-purple-300 mb-2">
+            🔑 秘密零件：<span class="kaiti text-2xl text-purple-700">口</span>（嘴巴）
+          </div>
+          <p class="text-sm font-bold text-slate-600">語詞：右腳、右邊、一左一右 🔊</p>
+        </div>
+      </div>
+
+      <!-- 互動小遊戲：國字拼裝大師（零件配對選字） -->
+      <div class="bg-white rounded-3xl p-6 shadow-lg border-4 border-amber-300">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 class="text-xl font-black text-amber-950 flex items-center gap-2">
+              <span>🧩</span> 零件偵探大挑戰：看提示找出正確國字！
+            </h3>
+            <p id="detectivePrompt" class="text-slate-700 font-bold mt-1 text-base sm:text-lg">
+              點選「出題考考我」，幫「左、在、右」和本課生字找對家！
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="repeatDetectiveQ()" class="bg-orange-100 hover:bg-orange-200 text-orange-900 font-bold px-3.5 py-2 rounded-xl border-2 border-orange-300">
+              🔊 再聽一次
+            </button>
+            <button onclick="startDetectiveQuiz()" class="bg-orange-600 hover:bg-orange-700 text-white font-black px-5 py-2 rounded-xl shadow border-b-4 border-orange-800 btn-3d">
+              🎲 出題考考我
+            </button>
+          </div>
+        </div>
+
+        <!-- 視覺線索卡片 -->
+        <div id="detectiveClueBox" class="bg-amber-50 border-2 border-dashed border-amber-400 rounded-2xl p-4 mb-4 text-center hidden">
+          <div id="detectiveClueVisual" class="text-2xl sm:text-3xl font-black text-amber-950"></div>
+        </div>
+
+        <div id="detectiveChoices" class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          <!-- 由 JS 產生選項按鈕 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: 疊字數量魔法（課本 P.28：一朵小花 ➔ 一朵朵小花） ==================== -->
+    <section id="tab-quantity" class="hidden space-y-6">
+      <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-lg border-4 border-pink-300">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div>
+            <span class="bg-pink-100 text-pink-800 text-xs font-black px-3 py-1 rounded-full border border-pink-300">對應課本第 28 頁：⑤ 比一比數量 ＆ ④ 把詞語變成句子</span>
+            <h2 class="text-2xl font-black text-pink-950 mt-1">🌸 疊字數量魔法：變出好多好多！</h2>
+            <p class="text-slate-600 text-sm">
+              按一下魔法按鈕，把量詞變成**疊字**（「朵 ➔ 朵朵」、「張 ➔ 張張」），看看數量怎麼變多！
+            </p>
+          </div>
+        </div>
+
+        <!-- 兩個互動變身器：一朵小花 / 一張貼紙 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <!-- 卡片 1：朵 -> 朵朵 -->
+          <div class="bg-pink-50/80 rounded-3xl p-5 border-4 border-pink-200 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="bg-pink-500 text-white font-black px-3 py-1 rounded-full text-xs">量詞：朵（ㄉㄨㄛˇ）</span>
+                <button id="toggleFlowerBtn" onclick="toggleMagicQuantity('flower')" class="bg-pink-600 hover:bg-pink-700 text-white font-black px-4 py-1.5 rounded-xl shadow border-b-4 border-pink-800 btn-3d text-sm">
+                  ✨ 施展疊字魔法！
+                </button>
+              </div>
+
+              <!-- 視覺數量展示窗 -->
+              <div id="flowerVisualStage" class="bg-white rounded-2xl p-4 h-36 border-2 border-pink-200 flex items-center justify-center gap-2 flex-wrap shadow-inner">
+                <span class="text-6xl">🌸</span>
+              </div>
+            </div>
+
+            <div class="mt-4 text-center">
+              <div id="flowerPhraseText" class="kaiti text-3xl sm:text-4xl font-black text-slate-900">
+                一<span class="text-pink-600">朵</span>小花
+              </div>
+              <p id="flowerDescText" class="text-xs sm:text-sm font-bold text-slate-500 mt-1">
+                只有 1 朵小花（點上方魔法按鈕變很多朵！）
+              </p>
+            </div>
+          </div>
+
+          <!-- 卡片 2：張 -> 張張 -->
+          <div class="bg-sky-50/80 rounded-3xl p-5 border-4 border-sky-200 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="bg-sky-500 text-white font-black px-3 py-1 rounded-full text-xs">量詞：張（ㄓㄤ）</span>
+                <button id="toggleStickerBtn" onclick="toggleMagicQuantity('sticker')" class="bg-sky-600 hover:bg-sky-700 text-white font-black px-4 py-1.5 rounded-xl shadow border-b-4 border-sky-800 btn-3d text-sm">
+                  ✨ 施展疊字魔法！
+                </button>
+              </div>
+
+              <!-- 視覺數量展示窗 -->
+              <div id="stickerVisualStage" class="bg-white rounded-2xl p-4 h-36 border-2 border-sky-200 flex items-center justify-center gap-2 flex-wrap shadow-inner">
+                <span class="text-6xl">😊</span>
+              </div>
+            </div>
+
+            <div class="mt-4 text-center">
+              <div id="stickerPhraseText" class="kaiti text-3xl sm:text-4xl font-black text-slate-900">
+                一<span class="text-sky-600">張</span>笑臉
+              </div>
+              <p id="stickerDescText" class="text-xs sm:text-sm font-bold text-slate-500 mt-1">
+                只有 1 張笑臉（課本：一張張笑臉、一張張貼紙）
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 課本 P.28 ④ 動作疊字階梯（招手 -> 招招手 -> 朋友向我招招手） -->
+        <div class="bg-amber-50 rounded-3xl p-5 border-4 border-amber-200">
+          <h3 class="text-lg sm:text-xl font-black text-amber-950 mb-3 flex items-center gap-2">
+            <span>🐰</span> 課本第 28 頁：重複動作讓句子更活潑（點階梯聽句子）
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- 招手階梯 -->
+            <div class="bg-white rounded-2xl p-4 border-2 border-amber-300 space-y-2">
+              <div onclick="speakText('招手')" class="cursor-pointer hover:bg-amber-50 p-2 rounded-xl border border-amber-200 flex items-center justify-between">
+                <span class="kaiti text-2xl font-black">1️⃣ 招手</span>
+                <span class="text-xs font-bold text-amber-700">🔊 詞語</span>
+              </div>
+              <div onclick="speakText('招招手')" class="cursor-pointer hover:bg-amber-50 p-2 rounded-xl border border-amber-200 flex items-center justify-between">
+                <span class="kaiti text-2xl font-black text-rose-600">2️⃣ 招招手</span>
+                <span class="text-xs font-bold text-rose-700">🔊 重複動作</span>
+              </div>
+              <div onclick="speakText('朋友向我招招手。')" class="cursor-pointer bg-amber-100/70 hover:bg-amber-100 p-2.5 rounded-xl border-2 border-amber-400 flex items-center justify-between">
+                <span class="kaiti text-2xl font-black text-slate-900">3️⃣ 朋友向我<span class="text-rose-600">招招手</span>。</span>
+                <span class="text-2xl">👋</span>
+              </div>
+            </div>
+
+            <!-- 跳舞階梯 -->
+            <div class="bg-white rounded-2xl p-4 border-2 border-amber-300 space-y-2">
+              <div onclick="speakText('跳舞')" class="cursor-pointer hover:bg-amber-50 p-2 rounded-xl border border-amber-200 flex items-center justify-between">
+                <span class="kaiti text-2xl font-black">1️⃣ 跳舞</span>
+                <span class="text-xs font-bold text-amber-700">🔊 詞語</span>
+              </div>
+              <div onclick="speakText('跳跳舞')" class="cursor-pointer hover:bg-amber-50 p-2 rounded-xl border border-amber-200 flex items-center justify-between">
+                <span class="kaiti text-2xl font-black text-rose-600">2️⃣ 跳跳舞</span>
+                <span class="text-xs font-bold text-rose-700">🔊 重複動作</span>
+              </div>
+              <div onclick="speakText('我們來跳跳舞。')" class="cursor-pointer bg-amber-100/70 hover:bg-amber-100 p-2.5 rounded-xl border-2 border-amber-400 flex items-center justify-between">
+                <span class="kaiti text-2xl font-black text-slate-900">3️⃣ 我們來<span class="text-rose-600">跳跳舞</span>。</span>
+                <span class="text-2xl">💃</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: 魔法手印畫布（課本 P.24~25 ＆ P.29 聯想互動） ==================== -->
+    <section id="tab-handprint" class="hidden space-y-6">
+      <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-lg border-4 border-emerald-300">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <span class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full border border-emerald-300">課文情境實作：張開小手，印一印！</span>
+            <h2 class="text-2xl font-black text-emerald-950 mt-1">🎨 魔法手印蓋章機：印出課本里的好朋友！</h2>
+            <p class="text-slate-600 text-sm">
+              點選下面的**國字按鈕**，沾上顏料在畫布上蓋手印，看看會變出什麼圖案，還會唸出課文句子喔！
+            </p>
+          </div>
+          <button onclick="clearHandprintCanvas()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-xl text-sm">
+            🧹 清空畫布
+          </button>
+        </div>
+
+        <!-- 國字印章選擇列（訓練看國字選圖案） -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
+          <button onclick="stampItem('魚', '🐟', '印出小魚招招手！', 'bg-sky-100 border-sky-400')" class="bg-sky-50 hover:bg-sky-100 border-3 border-sky-300 rounded-2xl p-3 flex flex-col items-center shadow-sm btn-3d">
+            <span class="text-xs font-bold text-sky-700 mb-1">🖐️ 印出小</span>
+            <span class="kaiti text-4xl font-black text-slate-900">魚</span>
+          </button>
+
+          <button onclick="stampItem('車子', '🚗', '印出車子地上走！', 'bg-amber-100 border-amber-400')" class="bg-amber-50 hover:bg-amber-100 border-3 border-amber-300 rounded-2xl p-3 flex flex-col items-center shadow-sm btn-3d">
+            <span class="text-xs font-bold text-amber-700 mb-1">🖐️ 印出</span>
+            <span class="kaiti text-4xl font-black text-slate-900">車子</span>
+          </button>
+
+          <button onclick="stampItem('小花', '🌸', '印出小花一朵朵！', 'bg-pink-100 border-pink-400')" class="bg-pink-50 hover:bg-pink-100 border-3 border-pink-300 rounded-2xl p-3 flex flex-col items-center shadow-sm btn-3d">
+            <span class="text-xs font-bold text-pink-700 mb-1">🖐️ 印出</span>
+            <span class="kaiti text-4xl font-black text-slate-900">小花</span>
+          </button>
+
+          <button onclick="stampItem('大象', '🐘', '課本第29頁：手印變成大象！', 'bg-purple-100 border-purple-400')" class="bg-purple-50 hover:bg-purple-100 border-3 border-purple-300 rounded-2xl p-3 flex flex-col items-center shadow-sm btn-3d">
+            <span class="text-xs font-bold text-purple-700 mb-1">🖐️ 變出</span>
+            <span class="kaiti text-4xl font-black text-slate-900">大象</span>
+          </button>
+
+          <button onclick="stampItem('螃蟹', '🦀', '課本第29頁：兩隻手印變成小螃蟹！', 'bg-rose-100 border-rose-400')" class="bg-rose-50 hover:bg-rose-100 border-3 border-rose-300 rounded-2xl p-3 flex flex-col items-center shadow-sm btn-3d">
+            <span class="text-xs font-bold text-rose-700 mb-1">🖐️ 變出</span>
+            <span class="kaiti text-4xl font-black text-slate-900">螃蟹</span>
+          </button>
+        </div>
+
+        <!-- 手印畫布展示區 -->
+        <div id="handprintCanvas" class="bg-amber-50/70 border-4 border-dashed border-amber-300 rounded-3xl p-5 min-h-[220px] flex flex-wrap items-center justify-center gap-4">
+          <div class="text-slate-400 font-bold text-center">
+            👆 點選上方的國字按鈕，在這裡印出魔法手印畫吧！
+          </div>
+        </div>
+
+        <div id="handprintSentenceLog" class="mt-4 bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3.5 text-center kaiti text-2xl font-black text-emerald-950">
+          張開小手，印一印！
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: 第二課課文與生字（P.24~P.26） ==================== -->
+    <section id="tab-text" class="hidden space-y-6">
+      <!-- 課文互動朗讀區 -->
+      <div class="bg-white rounded-3xl p-6 shadow-lg border-4 border-orange-300">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div>
+            <span class="bg-orange-100 text-orange-800 text-xs font-black px-3 py-1 rounded-full border border-orange-300">課本第 24～25 頁課文</span>
+            <h2 class="text-2xl font-black text-orange-950 mt-1">📖 二、印手印（點選句子或單字聽發音）</h2>
+          </div>
+          <button onclick="readLesson2Full()" class="bg-orange-600 hover:bg-orange-700 text-white font-black px-5 py-2.5 rounded-2xl shadow border-b-4 border-orange-800 btn-3d flex items-center gap-2">
+            <span>🔊</span> 整篇課文朗讀
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="lesson2TextGrid">
+          <!-- 由 JS 渲染課文句子 -->
+        </div>
+      </div>
+
+      <!-- 本課生字百寶箱（課本 P.26 加油小站：我會寫的字 + 我會認字） -->
+      <div class="bg-white rounded-3xl p-6 shadow-lg border-4 border-amber-300">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <h3 class="text-xl font-black text-amber-950 flex items-center gap-2">
+            <span>✏️</span> 第二課生字百寶箱（課本 P.26 加油小站）
+          </h3>
+          <span class="text-xs font-bold text-amber-800 bg-amber-100 px-3 py-1 rounded-full">包含部首筆順小口訣（「花」先寫艸、「笑」先寫竹）</span>
+        </div>
+
+        <div id="lesson2CharsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <!-- 由 JS 渲染生字卡 -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ==================== 語音合成器 (台灣國語優先) ====================
+    function speakText(text, rate = 0.88) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'zh-TW';
+      utter.rate = rate;
+      utter.pitch = 1.05;
+
+      const voices = window.speechSynthesis.getVoices();
+      const twVoice = voices.find(v => v.lang.includes('zh-TW') || v.name.includes('Taiwan') || v.name.includes('Meijia') || v.name.includes('Yating'));
+      if (twVoice) utter.voice = twVoice;
+
+      window.speechSynthesis.speak(utter);
+    }
+
+    // ==================== 狀態管理 ====================
+    let totalStars = parseInt(localStorage.getItem('dejun_lesson2_stars') || '0', 10);
+    let zhuyinVisible = true;
+
+    function updateStarDisplay(add = 0) {
+      if (add > 0) {
+        totalStars += add;
+        localStorage.setItem('dejun_lesson2_stars', totalStars.toString());
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 45, spread: 65, origin: { y: 0.7 } });
+        }
+      }
+      document.getElementById('scoreDisplay').textContent = totalStars;
+    }
+
+    function toggleZhuyin() {
+      zhuyinVisible = !zhuyinVisible;
+      document.body.classList.toggle('hide-zhuyin', !zhuyinVisible);
+      document.getElementById('zhuyinIcon').textContent = zhuyinVisible ? '👁️' : '🎯';
+      document.getElementById('zhuyinBtnText').textContent = zhuyinVisible ? '注音：顯示中' : '純國字挑戰模式';
+      speakText(zhuyinVisible ? '開啟注音輔助' : '切換成純國字模式，直接看國字形狀喔！');
+    }
+
+    function switchTab(tabId) {
+      const tabs = ['tab-detective', 'tab-quantity', 'tab-handprint', 'tab-text'];
+      tabs.forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== tabId);
+        const btn = document.getElementById('btn-' + id);
+        if (id === tabId) {
+          btn.className = 'tab-btn bg-orange-600 text-white font-black py-2.5 px-3 rounded-2xl shadow border-b-4 border-orange-800 flex items-center justify-center gap-1.5 text-sm sm:text-base transition';
+        } else {
+          btn.className = 'tab-btn bg-white hover:bg-orange-50 text-orange-900 font-bold py-2.5 px-3 rounded-2xl shadow-sm border-2 border-orange-200 flex items-center justify-center gap-1.5 text-sm sm:text-base transition';
+        }
+      });
+    }
+
+    // ==================== TAB 1: 相似字與生字偵探挑戰 ====================
+    const DETECTIVE_POOL = [
+      { char: '在', zhuyin: 'ㄗㄞˋ', clueHtml: '裡面住著「<span class="text-rose-600 kaiti text-4xl">土</span>」，語詞：現＿、＿地上', voice: '裡面住著泥土的土，現在的在、在地上的在，是哪一個字？' },
+      { char: '左', zhuyin: 'ㄗㄨㄛˇ', clueHtml: '下面住著「<span class="text-amber-600 kaiti text-4xl">工</span>」，語詞：＿手、一＿一右', voice: '下面住著工作的工，左手的左，是哪一個字？' },
+      { char: '右', zhuyin: 'ㄧㄡˋ', clueHtml: '下面住著「<span class="text-purple-600 kaiti text-4xl">口</span>」，語詞：＿腳、一左一＿', voice: '下面住著嘴巴的口，右腳的右，是哪一個字？' },
+      { char: '花', zhuyin: 'ㄏㄨㄚ', clueHtml: '上面有草字頭「<span class="text-emerald-600 kaiti text-4xl">艹</span>」＋「化」，語詞：小＿一朵朵', voice: '上面有草字頭，小花一朵朵的花，是哪一個字？' },
+      { char: '笑', zhuyin: 'ㄒㄧㄠˋ', clueHtml: '上面有竹字頭「<span class="text-emerald-600 kaiti text-4xl">⺮</span>」＋「夭」，語詞：＿臉、微＿', voice: '上面有竹字頭，笑臉的笑，是哪一個字？' },
+      { char: '開', zhuyin: 'ㄎㄞ', clueHtml: '大門「<span class="text-orange-600 kaiti text-4xl">門</span>」打開了，語詞：張＿小手、＿門', voice: '把門打開了，張開小手的開，是哪一個字？' }
+    ];
+    let currentDetectiveQ = null;
+
+    function renderDetectiveChoices(shuffled = false) {
+      const list = shuffled ? [...DETECTIVE_POOL].sort(() => Math.random() - 0.5) : DETECTIVE_POOL;
+      const container = document.getElementById('detectiveChoices');
+      container.innerHTML = list.map(item => `
+        <button onclick="checkDetectiveAnswer('${item.char}')"
+                class="bg-amber-50 hover:bg-amber-100 active:scale-95 transition border-3 border-amber-300 rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm">
+          <span class="kaiti text-5xl sm:text-6xl font-black text-slate-900">${item.char}</span>
+          <span class="zhuyin-box text-xs font-bold text-slate-500 mt-1">${item.zhuyin}</span>
+        </button>
+      `).join('');
+    }
+
+    function startDetectiveQuiz() {
+      currentDetectiveQ = DETECTIVE_POOL[Math.floor(Math.random() * DETECTIVE_POOL.length)];
+      renderDetectiveChoices(true);
+      const clueBox = document.getElementById('detectiveClueBox');
+      clueBox.classList.remove('hidden');
+      document.getElementById('detectiveClueVisual').innerHTML = currentDetectiveQ.clueHtml;
+      document.getElementById('detectivePrompt').innerHTML = `👂 聽一聽、看線索，選出正確的國字！`;
+      speakText(currentDetectiveQ.voice);
+    }
+
+    function repeatDetectiveQ() {
+      if (!currentDetectiveQ) {
+        startDetectiveQuiz();
+        return;
+      }
+      speakText(currentDetectiveQ.voice);
+    }
+
+    function checkDetectiveAnswer(picked) {
+      if (!currentDetectiveQ) {
+        speakText(picked);
+        return;
+      }
+      if (picked === currentDetectiveQ.char) {
+        updateStarDisplay(1);
+        document.getElementById('detectivePrompt').innerHTML = `🎉 賓果！你認出「<span class="kaiti text-3xl text-emerald-700 font-black">${picked}</span>」了！`;
+        speakText(`答對了！就是${picked}！眼神真銳利！`);
+        setTimeout(() => startDetectiveQuiz(), 1700);
+      } else {
+        speakText(`這是「${picked}」，再看看線索，找找「${currentDetectiveQ.char}」在哪裡喔！`);
+      }
+    }
+
+    // ==================== TAB 2: 疊字數量魔法 ====================
+    let isFlowerPlural = false;
+    let isStickerPlural = false;
+
+    function toggleMagicQuantity(type) {
+      if (type === 'flower') {
+        isFlowerPlural = !isFlowerPlural;
+        const stage = document.getElementById('flowerVisualStage');
+        const phrase = document.getElementById('flowerPhraseText');
+        const desc = document.getElementById('flowerDescText');
+        const btn = document.getElementById('toggleFlowerBtn');
+
+        if (isFlowerPlural) {
+          stage.innerHTML = `<span class="text-4xl stamp-anim">🌸</span><span class="text-4xl stamp-anim">🌺</span><span class="text-4xl stamp-anim">🌼</span><span class="text-4xl stamp-anim">🌻</span><span class="text-4xl stamp-anim">🌷</span><span class="text-4xl stamp-anim">🌸</span>`;
+          phrase.innerHTML = `一<span class="text-pink-600 underline">朵朵</span>小花`;
+          desc.textContent = `疊字「朵朵」＝表示有很多很多朵小花！`;
+          btn.textContent = `↩️ 變回一朵`;
+          updateStarDisplay(1);
+          speakText('一朵朵小花！表示有很多朵小花！');
+        } else {
+          stage.innerHTML = `<span class="text-6xl stamp-anim">🌸</span>`;
+          phrase.innerHTML = `一<span class="text-pink-600">朵</span>小花`;
+          desc.textContent = `只有 1 朵小花`;
+          btn.textContent = `✨ 施展疊字魔法！`;
+          speakText('一朵小花');
+        }
+      } else if (type === 'sticker') {
+        isStickerPlural = !isStickerPlural;
+        const stage = document.getElementById('stickerVisualStage');
+        const phrase = document.getElementById('stickerPhraseText');
+        const desc = document.getElementById('stickerDescText');
+        const btn = document.getElementById('toggleStickerBtn');
+
+        if (isStickerPlural) {
+          stage.innerHTML = `<span class="text-4xl stamp-anim">😊</span><span class="text-4xl stamp-anim">😄</span><span class="text-4xl stamp-anim">😆</span><span class="text-4xl stamp-anim">🥰</span><span class="text-4xl stamp-anim">😁</span><span class="text-4xl stamp-anim">🤩</span>`;
+          phrase.innerHTML = `一<span class="text-sky-600 underline">張張</span>笑臉`;
+          desc.textContent = `疊字「張張」＝表示有很多很多張笑臉（或一張張貼紙）！`;
+          btn.textContent = `↩️ 變回一張`;
+          updateStarDisplay(1);
+          speakText('一張張笑臉！表示有很多張笑臉！');
+        } else {
+          stage.innerHTML = `<span class="text-6xl stamp-anim">😊</span>`;
+          phrase.innerHTML = `一<span class="text-sky-600">張</span>笑臉`;
+          desc.textContent = `只有 1 張笑臉`;
+          btn.textContent = `✨ 施展疊字魔法！`;
+          speakText('一張笑臉');
+        }
+      }
+    }
+
+    // ==================== TAB 3: 魔法手印畫布 ====================
+    let stampCount = 0;
+    function stampItem(word, emoji, sentence, colorClass) {
+      const canvas = document.getElementById('handprintCanvas');
+      if (stampCount === 0) {
+        canvas.innerHTML = '';
+      }
+      stampCount++;
+      const badge = document.createElement('div');
+      badge.className = `${colorClass} border-3 rounded-2xl px-4 py-3 flex flex-col items-center shadow-md stamp-anim`;
+      badge.innerHTML = `
+        <div class="flex items-center gap-1">
+          <span class="text-2xl opacity-60">🖐️</span>
+          <span class="text-4xl">${emoji}</span>
+        </div>
+        <span class="kaiti text-xl font-black text-slate-900 mt-1">${word}</span>
+      `;
+      canvas.appendChild(badge);
+      document.getElementById('handprintSentenceLog').textContent = `✨ ${sentence}`;
+      updateStarDisplay(1);
+      speakText(sentence);
+    }
+
+    function clearHandprintCanvas() {
+      stampCount = 0;
+      document.getElementById('handprintCanvas').innerHTML = `
+        <div class="text-slate-400 font-bold text-center">
+          👆 點選上方的國字按鈕，在這裡印出魔法手印畫吧！
+        </div>
+      `;
+      document.getElementById('handprintSentenceLog').textContent = '張開小手，印一印！';
+    }
+
+    // ==================== TAB 4: 課文與生字資料 ====================
+    const LESSON2_SENTENCES = [
+      { num: 1, text: '張開小手，印一印。', emoji: '🖐️🎨' },
+      { num: 2, text: '印出小魚招招手，', emoji: '🐟👋' },
+      { num: 3, text: '印出車子地上走，', emoji: '🚗🛣️' },
+      { num: 4, text: '印出小花一朵朵。', emoji: '🌸🌺' },
+      { num: 5, text: '一朵朵小花，開在一張張笑臉上。', emoji: '😊🌸' }
+    ];
+
+    const LESSON2_CHARS = [
+      { char: '開', zhuyin: ['ㄎ','ㄞ'], word: '張開、開門', note: '門部（12畫）' },
+      { char: '出', zhuyin: ['ㄔ','ㄨ'], word: '印出、出去', note: '凵部（5畫）' },
+      { char: '招', zhuyin: ['ㄓ','ㄠ'], word: '招手、招招手', note: '手部（8畫）' },
+      { char: '車', zhuyin: ['ㄔ','ㄜ'], word: '車子、火車', note: '車部（7畫）' },
+      { char: '子', zhuyin: ['ㄗˇ'], word: '車子、孩子', note: '子部（3畫）' },
+      { char: '地', zhuyin: ['ㄉ','ㄧˋ'], word: '地上、土地', note: '土部（6畫）' },
+      { char: '花', zhuyin: ['ㄏ','ㄨ','ㄚ'], word: '小花、開花', note: '先寫「艹」再寫「化」' },
+      { char: '朵', zhuyin: ['ㄉ','ㄨ','ㄛˇ'], word: '一朵朵、花朵', note: '木部（6畫）' },
+      { char: '在', zhuyin: ['ㄗ','ㄞˋ'], word: '在地上、現在', note: '土部（6畫）' },
+      { char: '笑', zhuyin: ['ㄒ','ㄧ','ㄠˋ'], word: '笑臉、微笑', note: '先寫「⺮」再寫「夭」' },
+      { char: '印', zhuyin: ['ㄧ','ㄣˋ'], word: '手印、印一印', note: '我會認' },
+      { char: '張', zhuyin: ['ㄓ','ㄤ'], word: '張開、一張張', note: '我會認' },
+      { char: '臉', zhuyin: ['ㄌ','ㄧ','ㄢˇ'], word: '笑臉、洗臉', note: '我會認' },
+      { char: '土', zhuyin: ['ㄊ','ㄨˇ'], word: '土地、泥土', note: '象形認字' }
+    ];
+
+    function renderLesson2Content() {
+      const grid = document.getElementById('lesson2TextGrid');
+      grid.innerHTML = LESSON2_SENTENCES.map(s => {
+        const charsHtml = s.text.split('').map(ch =>
+          `<span onclick="event.stopPropagation(); speakText('${ch}')" class="inline-block px-0.5 rounded hover:bg-orange-200 transition">${ch}</span>`
+        ).join('');
+        return `
+          <div onclick="speakText('${s.text}')" class="cursor-pointer bg-orange-50/70 hover:bg-orange-100/80 transition p-4 rounded-2xl border-2 border-orange-200 flex items-center justify-between gap-3">
+            <div>
+              <span class="text-xs font-bold text-orange-800 bg-white px-2 py-0.5 rounded-full border border-orange-200">第 ${s.num} 句</span>
+              <div class="kaiti text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-wider">${charsHtml}</div>
+            </div>
+            <div class="text-3xl shrink-0">${s.emoji}</div>
+          </div>
+        `;
+      }).join('');
+
+      const charsGrid = document.getElementById('lesson2CharsGrid');
+      charsGrid.innerHTML = LESSON2_CHARS.map(c => `
+        <div onclick="speakText('${c.char}，${c.word}')" class="cursor-pointer bg-amber-50/60 hover:bg-amber-100/70 rounded-2xl p-3 border-2 border-amber-200 transition hover:-translate-y-1 shadow-sm flex flex-col items-center">
+          <span class="text-[11px] font-black px-2 py-0.5 rounded-full mb-2 bg-orange-100 text-orange-900">${c.note}</span>
+          <div class="flex items-center gap-2">
+            <div class="tian-zi-ge w-16 h-16 flex items-center justify-center">
+              <span class="kaiti text-5xl font-black text-slate-900">${c.char}</span>
+            </div>
+            <div class="zhuyin-box zhuyin-col text-xs font-bold text-slate-600">
+              ${c.zhuyin.map(z => `<span>${z}</span>`).join('')}
+            </div>
+          </div>
+          <div class="text-xs font-bold text-slate-700 mt-2 text-center">${c.word}</div>
+        </div>
+      `).join('');
+    }
+
+    function readLesson2Full() {
+      speakText('第二課，印手印。張開小手，印一印。印出小魚招招手，印出車子地上走，印出小花一朵朵。一朵朵小花，開在一張張笑臉上。', 0.85);
+    }
+
+    // ==================== 初始化 ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      updateStarDisplay(0);
+      renderDetectiveChoices(false);
+      renderLesson2Content();
+    });
+  </script>
+</body>
+</html>
